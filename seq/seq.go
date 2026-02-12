@@ -2,73 +2,81 @@ package seq
 
 import (
 	"context"
-	"stepframe/seq/clock"
-	"stepframe/seq/engine"
-	"stepframe/seq/midi"
+	"stepframe/clock"
 )
 
 type Sequencer struct {
-	tracks []*engine.Track
+	tracks      []*Track
+	clock       clock.Clock
+	scheduler   *Scheduler
+	manager     *NoteManager
+	done        chan struct{} // Sequencer is done
+	clockEvRate int64         // how many clock ticks per clock event
 }
 
-func NewSequencer() *Sequencer {
+func NewSequencer(clock clock.Clock, clockEvRate int64) *Sequencer {
+	sched := NewScheduler()
+
 	return &Sequencer{
-		tracks: make([]*engine.Track, 0),
+		tracks:      make([]*Track, 0),
+		clock:       clock,
+		scheduler:   sched,
+		manager:     NewNoteManager(sched),
+		done:        make(chan struct{}),
+		clockEvRate: clockEvRate,
 	}
 }
 
-func (s *Sequencer) AddTrack(tr *engine.Track) {
+func (s *Sequencer) AddTrack(tr *Track) {
 	s.tracks = append(s.tracks, tr)
 }
 
-func (s *Sequencer) Run(ctx context.Context) {
-	mdiOut := midi.NewOut(1)
+func (s *Sequencer) Wait() {
+	<-s.done
+}
 
-	sched := engine.NewScheduler()
-	nm := engine.NewNoteManager(sched)
-
-	clk := clock.NewInternalClock(120.0, 256)
-	clk.Start(ctx)
-
-	// cleanup on exit
-	defer func() {
-		mdiOut.PanicAll()
-		clk.Stop()
-	}()
-
+func (s *Sequencer) Run(ctx context.Context, send func(e Event)) {
 	for _, tr := range s.tracks {
 		tr.Reset(0)
 	}
+
+	go s.run(ctx, send)
+}
+
+func (s *Sequencer) run(ctx context.Context, send func(e Event)) {
+	defer func() {
+		send(Event{Type: EvPanic}) // all note off before exit
+		close(s.done)
+	}()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
 
-		case tk, ok := <-clk.Ticks():
+		case tk, ok := <-s.clock.Ticks():
 			if !ok {
 				return
 			}
 			now := tk.N
 
-			// send clock pulse
-			if tk.N%4 == 0 {
-				// clock runs 4 times faster than MIDI PPQN
-				_ = mdiOut.SendClockPulse()
+			// clock pulse
+			if tk.N%s.clockEvRate == 0 {
+				send(Event{Type: EvClock})
 			}
 
 			// poll tracks
 			for _, tr := range s.tracks {
 				noteEvents := tr.ProcessTick(now)
 				for _, nev := range noteEvents {
-					nm.HandleNote(nev)
+					s.manager.HandleNote(nev)
 				}
 			}
 
 			// send due
-			for _, ev := range sched.PopDue(now) {
-				_ = mdiOut.SendEvent(ev)
-				nm.OnEventSent(ev)
+			for _, ev := range s.scheduler.PopDue(now) {
+				send(ev)
+				s.manager.OnEventSent(ev)
 			}
 		}
 	}

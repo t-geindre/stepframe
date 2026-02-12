@@ -8,22 +8,24 @@ import (
 	"time"
 )
 
+// todo runtime.GOMAXPROCS(1) may reduce scheduler jitter (may affect GC performance, so test)
+
 type Internal struct {
 	ppqn     int64
 	bpm      atomic.Uint64 // lock-free (float64 bits)
 	ticks    chan Tick
 	stopOnce sync.Once
 	stopCh   chan struct{} // close to stop
+	done     chan struct{} // clock is done
 	running  atomic.Bool
 }
 
-func NewInternalClock(bpm float64, buffer int) *Internal {
+func NewInternalClock(ppqn int64, bpm float64, buffer int) *Internal {
 	c := &Internal{
-		// Pulses Per Quarter Note
-		// Standard MIDI clock uses 24 ppqn, but 96 allows for finer timing resolution.
-		ppqn:   96,
+		ppqn:   ppqn,
 		ticks:  make(chan Tick, buffer),
 		stopCh: make(chan struct{}),
+		done:   make(chan struct{}),
 	}
 	c.SetBPM(bpm)
 	return c
@@ -31,11 +33,7 @@ func NewInternalClock(bpm float64, buffer int) *Internal {
 
 func (c *Internal) Ticks() <-chan Tick { return c.ticks }
 
-func (c *Internal) Stop() {
-	c.stopOnce.Do(func() { close(c.stopCh) })
-}
-
-func (c *Internal) Start(ctx context.Context) {
+func (c *Internal) Run(ctx context.Context) {
 	if !c.running.CompareAndSwap(false, true) {
 		return
 	}
@@ -43,8 +41,29 @@ func (c *Internal) Start(ctx context.Context) {
 	go c.run(ctx)
 }
 
+// SetBPM thread-safe
+func (c *Internal) SetBPM(bpm float64) {
+	c.bpm.Store(math.Float64bits(bpm))
+}
+
+// BPM tread-safe
+func (c *Internal) BPM() float64 {
+	return math.Float64frombits(c.bpm.Load())
+}
+
+func (c *Internal) Wait() {
+	<-c.done
+}
+
+func (c *Internal) tickDuration() time.Duration {
+	bpm := c.BPM()
+	tps := (bpm / 60.0) * float64(c.ppqn)
+	secPerTick := 1.0 / tps
+	return time.Duration(secPerTick * float64(time.Second))
+}
+
 func (c *Internal) run(ctx context.Context) {
-	// todo runtime.GOMAXPROCS(1) may reduce scheduler jitter (may affect GC performance, so test)
+	defer close(c.done)
 
 	start := time.Now()
 	var tick int64 = 0
@@ -87,19 +106,4 @@ func (c *Internal) run(ctx context.Context) {
 			next = start.Add(time.Duration(tick) * tickDur)
 		}
 	}
-}
-
-func (c *Internal) SetBPM(bpm float64) {
-	c.bpm.Store(math.Float64bits(bpm))
-}
-
-func (c *Internal) BPM() float64 {
-	return math.Float64frombits(c.bpm.Load())
-}
-
-func (c *Internal) tickDuration() time.Duration {
-	bpm := c.BPM()
-	tps := (bpm / 60.0) * float64(c.ppqn)
-	secPerTick := 1.0 / tps
-	return time.Duration(secPerTick * float64(time.Second))
 }

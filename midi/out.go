@@ -1,11 +1,14 @@
 package midi
 
 import (
-	"stepframe/seq/engine"
+	"errors"
+	"stepframe/seq"
 
 	"gitlab.com/gomidi/midi/v2"
 	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv" // autoregister driver
 )
+
+var ErrUnknownEventType = errors.New("Unknown event type")
 
 type Out struct {
 	send func(midi.Message) error
@@ -25,29 +28,27 @@ func NewOut(port int) *Out {
 	return &Out{send: send}
 }
 
-func (o *Out) SendEvent(e engine.Event) error {
+func (o *Out) SendEvent(e seq.Event) {
+	var err error
+
 	switch e.Type {
-	case engine.EvNoteOn:
-		return o.send(midi.NoteOn(e.Channel, e.Note, e.Vel))
-	case engine.EvNoteOff:
-		return o.send(midi.NoteOff(e.Channel, e.Note))
-	case engine.EvCC:
-		return o.send(midi.ControlChange(e.Channel, e.CC, e.Value))
+	case seq.EvNoteOn:
+		err = o.send(midi.NoteOn(e.Channel, e.Note, e.Vel))
+	case seq.EvNoteOff:
+		err = o.send(midi.NoteOff(e.Channel, e.Note))
+	case seq.EvCC:
+		err = o.send(midi.ControlChange(e.Channel, e.CC, e.Value))
+	case seq.EvClock:
+		err = o.send(midi.TimingClock())
+	case seq.EvPanic:
+		o.PanicAll()
 	default:
-		return nil
+		err = ErrUnknownEventType
 	}
-}
 
-func (o *Out) SendClockPulse() error {
-	return o.send(midi.TimingClock())
-}
-
-func (o *Out) SendStart() error {
-	return o.send(midi.Start())
-}
-
-func (o *Out) SendStop() error {
-	return o.send(midi.Stop())
+	if err != nil {
+		panic("MIDI Send error: " + err.Error())
+	}
 }
 
 func (o *Out) PanicAll() {

@@ -11,9 +11,8 @@ type Tick struct {
 
 type Clock interface {
 	Ticks() <-chan Tick
-	Stop()
-	Start(ctx context.Context)
-	run(ctx context.Context)
+	Run(ctx context.Context)
 	SetBPM(bpm float64)
 	BPM() float64
+	Wait()
 }

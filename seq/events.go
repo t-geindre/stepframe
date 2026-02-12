@@ -1,4 +1,4 @@
-package engine
+package seq
 
 type EventType uint8
 
@@ -7,6 +7,7 @@ const (
 	EvNoteOff
 	EvCC
 	EvPanic // optional high-level "all notes off" request
+	EvClock
 )
 
 type Event struct {

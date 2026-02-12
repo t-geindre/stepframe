@@ -6,30 +6,31 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"stepframe/clock"
 	"stepframe/game"
+	"stepframe/midi"
 	"stepframe/seq"
-	midi2 "stepframe/seq/midi"
 	"stepframe/ui"
-	"sync"
 	"syscall"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 func main() {
+	// Pulse per quarter note (PPQN)
+	const MidiPPQN = 24
+	const InternalPPQN = 96
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 
-	midi2.DebugPorts() // todo remove me
+	mdi := midi.NewOut(1)
 
-	wg := sync.WaitGroup{}
-	wg.Add(1)
+	clk := clock.NewInternalClock(InternalPPQN, 120, 256)
+	clk.Run(ctx)
 
-	sqr := seq.NewSequencer()
+	sqr := seq.NewSequencer(clk, InternalPPQN/MidiPPQN)
 	sqr.AddTrack(getBillieJeanBassTrack())
-	go func() {
-		defer wg.Done()
-		sqr.Run(ctx)
-	}()
+	sqr.Run(ctx, mdi.SendEvent)
 
 	gui := ui.New()
 	update := game.NewUpdateFunc(func() error {
@@ -45,7 +46,9 @@ func main() {
 	}
 
 	stop()
-	wg.Wait()
+
+	clk.Wait()
+	sqr.Wait()
 
 	fmt.Println("GRACEFUL EXIT")
 }

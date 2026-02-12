@@ -1,4 +1,4 @@
-package engine
+package seq
 
 type NoteManager struct {
 	sched *Scheduler
