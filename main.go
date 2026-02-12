@@ -30,8 +30,14 @@ func main() {
 		clk.Stop()
 	}()
 
-	tracks := []*seq.Track{getBillieJeanBassTrack()}
-	//tracks := []*seq.Track{}
+	tracks := []*seq.Track{
+		getBillieJeanBassTrack(),
+		//getBillieJeanLeadTrack(),
+	}
+
+	for _, tr := range tracks {
+		tr.Reset(0)
+	}
 
 	for {
 		select {
