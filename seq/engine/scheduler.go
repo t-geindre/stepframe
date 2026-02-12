@@ -2,22 +2,21 @@ package engine
 
 import (
 	"sort"
-	"stepframe/seq"
 )
 
 type Scheduler struct { // todo implement as a min-heap
-	q []seq.Event
+	q []Event
 }
 
 func NewScheduler() *Scheduler { return &Scheduler{} }
 
-func (s *Scheduler) Push(events ...seq.Event) {
+func (s *Scheduler) Push(events ...Event) {
 	s.q = append(s.q, events...)
 	sort.Slice(s.q, func(i, j int) bool { return s.q[i].AtTick < s.q[j].AtTick })
 }
 
 // PopDue returns and removes all events with AtTick <= tick.
-func (s *Scheduler) PopDue(tick int64) []seq.Event {
+func (s *Scheduler) PopDue(tick int64) []Event {
 	i := 0
 	for i < len(s.q) && s.q[i].AtTick <= tick {
 		i++
@@ -25,7 +24,7 @@ func (s *Scheduler) PopDue(tick int64) []seq.Event {
 	if i == 0 {
 		return nil
 	}
-	due := append([]seq.Event(nil), s.q[:i]...)
+	due := append([]Event(nil), s.q[:i]...)
 	s.q = s.q[i:]
 	return due
 }

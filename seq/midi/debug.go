@@ -1,11 +1,15 @@
 package midi
 
-import "gitlab.com/gomidi/midi/v2"
+import (
+	"fmt"
+
+	"gitlab.com/gomidi/midi/v2"
+)
 
 func DebugPorts() {
 	outs := midi.GetOutPorts()
 	for i, p := range outs {
-		println("Out", i, ":", p.String())
+		fmt.Println("Out", i, ":", p.String())
 	}
 
 }

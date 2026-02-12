@@ -1,7 +1,7 @@
 package midi
 
 import (
-	"stepframe/seq"
+	"stepframe/seq/engine"
 
 	"gitlab.com/gomidi/midi/v2"
 	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv" // autoregister driver
@@ -25,13 +25,13 @@ func NewOut(port int) *Out {
 	return &Out{send: send}
 }
 
-func (o *Out) SendEvent(e seq.Event) error {
+func (o *Out) SendEvent(e engine.Event) error {
 	switch e.Type {
-	case seq.EvNoteOn:
+	case engine.EvNoteOn:
 		return o.send(midi.NoteOn(e.Channel, e.Note, e.Vel))
-	case seq.EvNoteOff:
+	case engine.EvNoteOff:
 		return o.send(midi.NoteOff(e.Channel, e.Note))
-	case seq.EvCC:
+	case engine.EvCC:
 		return o.send(midi.ControlChange(e.Channel, e.CC, e.Value))
 	default:
 		return nil

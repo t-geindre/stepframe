@@ -2,73 +2,50 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
 	"os/signal"
-	"stepframe/clock"
-	"stepframe/engine"
-	"stepframe/midi"
+	"stepframe/game"
 	"stepframe/seq"
+	midi2 "stepframe/seq/midi"
+	"stepframe/ui"
+	"sync"
 	"syscall"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 
-	midi.DebugPorts() // todo remove me
-	mdiOut := midi.NewOut(1)
+	midi2.DebugPorts() // todo remove me
 
-	sched := engine.NewScheduler()
-	nm := engine.NewNoteManager(sched)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 
-	clk := clock.NewInternalClock(120.0, 256)
-	clk.Start(ctx)
-
-	// cleanup on exit
-	defer func() {
-		stop()
-		mdiOut.PanicAll()
-		clk.Stop()
+	sqr := seq.NewSequencer()
+	sqr.AddTrack(getBillieJeanBassTrack())
+	go func() {
+		defer wg.Done()
+		sqr.Run(ctx)
 	}()
 
-	tracks := []*seq.Track{
-		getBillieJeanBassTrack(),
-		//getBillieJeanLeadTrack(),
-	}
-
-	for _, tr := range tracks {
-		tr.Reset(0)
-	}
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-
-		case tk, ok := <-clk.Ticks():
-			if !ok {
-				return
-			}
-			now := tk.N
-
-			// send clock pulse
-			if tk.N%4 == 0 {
-				// clock runs 4 times faster than MIDI PPQN
-				_ = mdiOut.SendClockPulse()
-			}
-
-			// poll tracks
-			for _, tr := range tracks {
-				noteEvents := tr.ProcessTick(now)
-				for _, nev := range noteEvents {
-					nm.HandleNote(nev)
-				}
-			}
-
-			// send due
-			for _, ev := range sched.PopDue(now) {
-				_ = mdiOut.SendEvent(ev)
-				nm.OnEventSent(ev)
-			}
+	gui := ui.New()
+	update := game.NewUpdateFunc(func() error {
+		if ctx.Err() != nil {
+			return ebiten.Termination
 		}
+		return nil
+	})
+
+	err := ebiten.RunGame(game.NewGame(update, gui))
+	if err != nil && !errors.Is(err, ebiten.Termination) {
+		panic(err)
 	}
+
+	stop()
+	wg.Wait()
+
+	fmt.Println("GRACEFUL EXIT")
 }

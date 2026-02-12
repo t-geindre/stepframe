@@ -1,6 +1,8 @@
-package seq
+package engine
 
-import "sort"
+import (
+	"sort"
+)
 
 type Step struct {
 	AtTick   int64 // LOCAL to track (0-based)

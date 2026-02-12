@@ -1,4 +1,4 @@
-package seq
+package engine
 
 type EventType uint8
 
