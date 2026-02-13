@@ -4,6 +4,10 @@ import (
 	"sort"
 )
 
+type Transformer interface {
+	Transform(track *Track)
+}
+
 type TrackId int64
 
 type Step struct {
@@ -44,8 +48,12 @@ func (t *Track) Append(steps ...Step) {
 	t.steps = append(t.steps, steps...)
 }
 
-// Sort Always sort before committing changes
-func (t *Track) Sort() {
+// Finalize Always sort before committing changes
+func (t *Track) Finalize(transformers ...Transformer) {
+	for _, tr := range transformers {
+		tr.Transform(t)
+	}
+
 	sort.Slice(t.steps, func(i, j int) bool {
 		return t.steps[i].AtTick < t.steps[j].AtTick
 	})

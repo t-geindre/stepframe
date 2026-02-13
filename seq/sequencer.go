@@ -17,6 +17,7 @@ type Sequencer struct {
 	running     atomic.Bool
 	clockEvRate int64 // how many clock ticks per clock event
 	commands    chan Command
+	events      chan Event
 }
 
 func NewSequencer(clock clock.Clock, clockEvRate int64) *Sequencer {
@@ -30,6 +31,7 @@ func NewSequencer(clock clock.Clock, clockEvRate int64) *Sequencer {
 		done:        make(chan struct{}),
 		clockEvRate: clockEvRate,
 		commands:    make(chan Command, 16),
+		events:      make(chan Event, 16),
 	}
 }
 
@@ -54,6 +56,10 @@ func (s *Sequencer) Run(ctx context.Context, send func(e Event)) {
 
 func (s *Sequencer) Commands() chan<- Command {
 	return s.commands
+}
+
+func (s *Sequencer) Events() <-chan Event {
+	return s.events
 }
 
 func (s *Sequencer) run(ctx context.Context, send func(e Event), done chan struct{}) {
@@ -83,6 +89,10 @@ func (s *Sequencer) run(ctx context.Context, send func(e Event), done chan struc
 }
 
 func (s *Sequencer) clockPulse(now int64, send func(e Event)) {
+	if now%s.clock.GetTicksPerQuarter() == 0 {
+		s.dispatch(EvBeat, 0)
+	}
+
 	return // todo temp disable clock events, overflows volca buffers
 	if now%s.clockEvRate == 0 {
 		send(Event{Type: EvClock})
@@ -135,6 +145,7 @@ func (s *Sequencer) processCommands(now int64) {
 			case CmdAdd:
 				s.addTrack(c.Track)
 			case CmdRemove:
+				s.removeTrack(c.TrackId)
 			case CmdSwap:
 			default:
 				panic("invalid command")
@@ -147,6 +158,25 @@ func (s *Sequencer) processCommands(now int64) {
 
 func (s *Sequencer) addTrack(tr *Track) {
 	s.tracks = append(s.tracks, NewTrackState(tr))
+	s.dispatch(EvTrackAdded, tr.Id())
+}
+
+func (s *Sequencer) removeTrack(id TrackId) {
+	idx := -1
+	for i, tr := range s.tracks {
+		if tr.track.Id() == id {
+			idx = i
+			break
+		}
+	}
+	if idx < 0 {
+		return
+	}
+	copy(s.tracks[idx:], s.tracks[idx+1:])
+	s.tracks[len(s.tracks)-1] = nil // aide le GC
+	s.tracks = s.tracks[:len(s.tracks)-1]
+
+	s.dispatch(EvTrackRemoved, id)
 }
 
 func (s *Sequencer) findTrack(id TrackId) *TrackState {
@@ -162,7 +192,15 @@ func (s *Sequencer) findTrack(id TrackId) *TrackState {
 func (s *Sequencer) playTrackAt(now int64, id TrackId, at CommandAt) {
 	tr := s.findTrack(id)
 
-	if tr == nil || tr.play {
+	if tr == nil {
+		return
+	}
+
+	if tr.play {
+		if tr.stopAt != 0 {
+			tr.stopAt = 0
+			s.dispatch(EvTrackPlay, id)
+		}
 		return
 	}
 
@@ -172,18 +210,27 @@ func (s *Sequencer) playTrackAt(now int64, id TrackId, at CommandAt) {
 		return
 	}
 	tr.playAt = atTk
+	s.dispatch(EvTrackArmed, id)
 }
 
 func (s *Sequencer) playTrackNow(now int64, tr *TrackState) {
 	tr.playAt = 0
 	tr.play = true
 	tr.Reset(now)
+	s.dispatch(EvTrackPlay, tr.track.Id())
 }
 
 func (s *Sequencer) stopTrackAt(now int64, id TrackId, at CommandAt) {
 	tr := s.findTrack(id)
 
-	if tr == nil || !tr.play {
+	if tr == nil {
+		return
+	}
+
+	s.dispatch(EvTrackStop, id)
+
+	if !tr.play {
+		tr.playAt = 0
 		return
 	}
 
@@ -223,5 +270,12 @@ func (s *Sequencer) getAtTick(now int64, at CommandAt) int64 {
 
 	default:
 		panic("invalid at command")
+	}
+}
+
+func (s *Sequencer) dispatch(ev EventType, id TrackId) {
+	select {
+	case s.events <- Event{Type: ev, TrackId: id}:
+	default: // full, drop
 	}
 }

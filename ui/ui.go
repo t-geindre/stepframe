@@ -4,49 +4,66 @@ import (
 	"stepframe/seq"
 	"stepframe/ui/layout"
 	"stepframe/ui/theme"
-	"strconv"
 
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/widget"
 )
 
+type Ui struct {
+	seq  *seq.Sequencer
+	grid *Grid
+	main *widget.Container
+}
+
 func New(sqr *seq.Sequencer) *ebitenui.UI {
+	var ui *Ui
 	th := theme.NewDefaultTheme()
-
-	playing := make(map[seq.TrackId]bool)
-
-	grid := layout.NewPlayGrid(th)
-	for i := 0; i < 16; i++ {
-		grid.AddChild(widget.NewButton(
-			widget.ButtonOpts.TextLabel("Play "+strconv.Itoa(i)),
-			widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-				trId := seq.TrackId(i)
-				if playing[trId] {
-					sqr.Commands() <- seq.Command{
-						Id:      seq.CmdStop,
-						TrackId: seq.TrackId(i),
-						At:      seq.CmdAtNextBar,
-					}
-					args.Button.SetText("Play " + strconv.Itoa(i))
-					playing[trId] = false
-					return
-				}
-				sqr.Commands() <- seq.Command{
-					Id:      seq.CmdPlay,
-					TrackId: seq.TrackId(i),
-					At:      seq.CmdAtNextBar,
-				}
-				args.Button.SetText("Stop " + strconv.Itoa(i))
-				playing[trId] = true
+	ui = &Ui{
+		seq:  sqr,
+		grid: NewGrid(th, sqr),
+		main: layout.NewMain(th, widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.OnUpdate(func(w widget.HasWidget) {
+				ui.Update()
 			}),
-		))
+		)),
 	}
 
-	main := layout.NewMain(th)
-	main.AddChild(grid)
+	// TODO TESTS REMOVE ME
+	// Add some tracks
+	sqr.Commands() <- seq.Command{
+		Id:    seq.CmdAdd,
+		Track: getBillieJeanLeadTrack(),
+	}
+	sqr.Commands() <- seq.Command{
+		Id:    seq.CmdAdd,
+		Track: getBillieJeanBassTrack(),
+	}
+	// TODO END ---
+
+	// default view
+	ui.main.AddChild(ui.grid)
 
 	return &ebitenui.UI{
-		Container:    main,
+		Container:    ui.main,
 		PrimaryTheme: th.Theme,
 	}
+}
+
+func (u *Ui) Update() {
+	u.drainSequencer()
+}
+
+func (u *Ui) drainSequencer() {
+	for i := 0; i < 1024; i++ { // prevent starvation
+		select {
+		case e := <-u.seq.Events():
+			u.handleEvent(e)
+		default:
+			return
+		}
+	}
+}
+
+func (u *Ui) handleEvent(e seq.Event) {
+	u.grid.HandleEvent(e)
 }

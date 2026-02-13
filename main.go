@@ -45,15 +45,6 @@ func main() {
 			Port: p.Id,
 		}
 	}
-	// add some tracks
-	sqr.Commands() <- seq.Command{
-		Id:    seq.CmdAdd,
-		Track: getBillieJeanLeadTrack(),
-	}
-	sqr.Commands() <- seq.Command{
-		Id:    seq.CmdAdd,
-		Track: getBillieJeanBassTrack(),
-	}
 	// TODO END ---
 
 	gui := ui.New(sqr)

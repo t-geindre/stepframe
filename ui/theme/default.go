@@ -57,13 +57,8 @@ func NewDefaultTheme() *Theme {
 	// Widget background (panel)
 	cWidgetPanelBg := colornames.Black
 
-	// Accents
-	cAccentBlue := color.RGBA{R: 0x2F, G: 0x7C, B: 0xF6, A: 100}
-	cAccentOrange := color.RGBA{R: 0xFF, G: 0x9F, B: 0x1C, A: 220}
-	cAccentGreen := color.RGBA{R: 0x4C, G: 0xC9, B: 0x6F, A: 200}
-
 	// ICONS
-	iconsBuilder := NewIconsBuilder(cText, cAccentGreen, cAccentOrange, cAccentBlue)
+	iconsBuilder := NewIconsBuilder()
 
 	// FONTS
 	face := getFontFace(14)
@@ -214,11 +209,7 @@ func NewDefaultTheme() *Theme {
 				Image: getCheckboxImage(),
 			},
 		},
-		IconsTheme: &IconsTheme{
-			NormalAccent: iconsBuilder.GetIcons(true, true, 1),
-			Normal:       iconsBuilder.GetIcons(false, true, 1),
-			Small:        iconsBuilder.GetIcons(true, true, .6),
-		},
+		Icons: iconsBuilder.GetIcons(1, nil),
 		MainMenuTheme: &MainMenuTheme{
 			ButtonImage: &widget.ButtonImage{
 				Idle:  image.NewNineSliceColor(cBtnIdleFill),

@@ -8,6 +8,12 @@ const (
 	EvCC
 	EvPanic // optional high-level "all notes off" request
 	EvClock
+	EvTrackPlay
+	EvTrackStop
+	EvTrackArmed
+	EvBeat
+	EvTrackAdded
+	EvTrackRemoved
 )
 
 type Event struct {
@@ -20,6 +26,7 @@ type Event struct {
 	Vel     uint8 // for NoteOn
 	CC      uint8 // for CC
 	Value   uint8 // for CC
+	TrackId TrackId
 }
 
 type NoteEvent struct {

@@ -6,11 +6,13 @@ import (
 	"github.com/ebitenui/ebitenui/widget"
 )
 
-func NewMain(th *theme.Theme) *widget.Container {
+func NewMain(th *theme.Theme, ops ...widget.ContainerOpt) *widget.Container {
 	return widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewStackedLayout(
-			widget.StackedLayoutOpts.Padding(th.PanelTheme.Padding),
-		)),
-		widget.ContainerOpts.BackgroundImage(th.PanelTheme.BackgroundImage),
+		append([]widget.ContainerOpt{
+			widget.ContainerOpts.Layout(widget.NewStackedLayout(
+				widget.StackedLayoutOpts.Padding(th.PanelTheme.Padding),
+			)),
+			widget.ContainerOpts.BackgroundImage(th.PanelTheme.BackgroundImage),
+		}, ops...)...,
 	)
 }
