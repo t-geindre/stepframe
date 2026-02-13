@@ -31,6 +31,10 @@ func NewInternalClock(ppqn int64, bpm float64, buffer int) *Internal {
 	return c
 }
 
+func (c *Internal) GetTicksPerQuarter() int64 {
+	return c.ppqn
+}
+
 func (c *Internal) Ticks() <-chan Tick { return c.ticks }
 
 func (c *Internal) Run(ctx context.Context) {

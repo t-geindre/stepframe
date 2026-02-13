@@ -15,4 +15,5 @@ type Clock interface {
 	SetBPM(bpm float64)
 	BPM() float64
 	Wait()
+	GetTicksPerQuarter() int64
 }

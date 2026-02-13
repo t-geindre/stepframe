@@ -12,7 +12,10 @@ func NewScheduler() *Scheduler { return &Scheduler{} }
 
 func (s *Scheduler) Push(events ...Event) {
 	s.q = append(s.q, events...)
-	sort.Slice(s.q, func(i, j int) bool { return s.q[i].AtTick < s.q[j].AtTick })
+	sort.SliceStable(s.q, func(i, j int) bool {
+		return s.q[i].AtTick < s.q[j].AtTick
+	})
+
 }
 
 // PopDue returns and removes all events with AtTick <= tick.

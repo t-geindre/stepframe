@@ -12,6 +12,7 @@ import (
 	"stepframe/seq"
 	"stepframe/ui"
 	"syscall"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -29,17 +30,31 @@ func main() {
 	clk.Run(ctx)
 
 	sqr := seq.NewSequencer(clk, InternalPPQN/MidiPPQN)
-	sqr.AddTrack(getBillieJeanBassTrack())
 	sqr.Run(ctx, mdi.SendEvent)
 
-	gui := ui.New()
+	// TODO TESTS REMOVE ME
+	time.AfterFunc(time.Millisecond*100, func() {
+		sqr.Commands() <- seq.Command{
+			Id:    seq.CmdAdd,
+			Track: getBillieJeanLeadTrack(),
+		}
+		sqr.Commands() <- seq.Command{
+			Id:    seq.CmdAdd,
+			Track: getBillieJeanBassTrack(),
+		}
+	})
+	// TODO END ---
+
+	gui := ui.New(sqr)
 	update := game.NewUpdateFunc(func() error {
+		gui.Update()
 		if ctx.Err() != nil {
 			return ebiten.Termination
 		}
 		return nil
 	})
 
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	err := ebiten.RunGame(game.NewGame(update, gui))
 	if err != nil && !errors.Is(err, ebiten.Termination) {
 		panic(err)

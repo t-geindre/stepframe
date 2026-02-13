@@ -15,6 +15,8 @@ type Out struct {
 }
 
 func NewOut(port int) *Out {
+	DebugPorts() // TODO REMOVE ME
+
 	out, err := midi.OutPort(port)
 	if err != nil {
 		panic("OutPort error: " + err.Error())
@@ -34,6 +36,8 @@ func (o *Out) SendEvent(e seq.Event) {
 	switch e.Type {
 	case seq.EvNoteOn:
 		err = o.send(midi.NoteOn(e.Channel, e.Note, e.Vel))
+		if e.Channel == 1 {
+		}
 	case seq.EvNoteOff:
 		err = o.send(midi.NoteOff(e.Channel, e.Note))
 	case seq.EvCC:
