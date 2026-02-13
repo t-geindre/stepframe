@@ -5,6 +5,7 @@ import (
 	"errors"
 	"stepframe/seq"
 	"sync/atomic"
+	"time"
 
 	"gitlab.com/gomidi/midi/v2"
 	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv" // autoregister driver
@@ -18,13 +19,17 @@ type Sender struct {
 	running  atomic.Bool
 	queue    chan seq.Event
 	commands chan Command
+	stagger  time.Duration
+	lastSend map[int]time.Time
 }
 
-func NewSender() *Sender {
+func NewSender(stagger time.Duration) *Sender {
 	return &Sender{
 		ports:    make(map[int]*Port),
 		queue:    make(chan seq.Event, 1024),
 		commands: make(chan Command, 16),
+		stagger:  stagger,
+		lastSend: make(map[int]time.Time),
 	}
 }
 
@@ -109,6 +114,16 @@ func (s *Sender) handleEvent(e seq.Event) {
 		return
 	}
 
+	// --- STAGGER: ensure we don't flood the same port ---
+	if s.stagger > 0 {
+		if last, ok := s.lastSend[e.Port]; ok {
+			elapsed := time.Since(last)
+			if elapsed < s.stagger {
+				time.Sleep(s.stagger - elapsed)
+			}
+		}
+	}
+
 	p, ok := s.ports[e.Port]
 	if !ok {
 		return
@@ -128,6 +143,8 @@ func (s *Sender) handleEvent(e seq.Event) {
 	default:
 		err = ErrUnknownEventType
 	}
+
+	s.lastSend[e.Port] = time.Now()
 
 	if err != nil {
 		// TODO don't panic, log error

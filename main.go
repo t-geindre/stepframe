@@ -12,6 +12,7 @@ import (
 	"stepframe/seq"
 	"stepframe/ui"
 	"syscall"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -23,7 +24,7 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 
-	mdi := midi.NewSender()
+	mdi := midi.NewSender(800 * time.Microsecond)
 	mdi.Run(ctx)
 	defer mdi.Wait()
 
