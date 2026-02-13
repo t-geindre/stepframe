@@ -82,6 +82,7 @@ func (t *TrackState) ProcessTick(tick int64, out []NoteEvent) []NoteEvent {
 		out = append(out, NoteEvent{
 			AtTick:   baseCycleTick + step.AtTick,
 			Channel:  tr.channel,
+			Port:     tr.port,
 			Note:     step.Note,
 			Velocity: step.Velocity,
 			Duration: step.GateTick,

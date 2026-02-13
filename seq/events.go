@@ -15,6 +15,7 @@ type Event struct {
 	Type   EventType
 
 	Channel uint8
+	Port    int
 	Note    uint8
 	Vel     uint8 // for NoteOn
 	CC      uint8 // for CC
@@ -24,6 +25,7 @@ type Event struct {
 type NoteEvent struct {
 	AtTick   int64
 	Channel  uint8
+	Port     int
 	Note     uint8
 	Velocity uint8
 	Duration int64

@@ -4,8 +4,6 @@ import (
 	"stepframe/seq"
 )
 
-// TODO stagger + prio OFF
-
 func getBillieJeanBassTrack() *seq.Track {
 	t := seq.NewTrack(0, "Bass (Billie Jean - played version)")
 	t.Append(
@@ -20,6 +18,7 @@ func getBillieJeanBassTrack() *seq.Track {
 	)
 	t.SetLoop(true, 384)
 	t.SetChannel(0)
+	t.SetPort(1)
 	t.Sort()
 	return t
 }
@@ -34,6 +33,7 @@ func getBillieJeanLeadTrack() *seq.Track {
 	)
 	t.SetLoop(true, 384*2)
 	t.SetChannel(1)
+	t.SetPort(1)
 	t.Sort()
 	return t
 }

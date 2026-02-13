@@ -2,7 +2,6 @@ package seq
 
 import (
 	"context"
-	"fmt"
 	"stepframe/clock"
 	"sync/atomic"
 )
@@ -106,10 +105,6 @@ func (s *Sequencer) processTracks(now int64, send func(e Event), evBuf []NoteEve
 
 		evBuf := make([]NoteEvent, 0, len(evBuf)) // todo temp fix
 		noteEvents := tr.ProcessTick(now, evBuf)
-
-		if noteEvents == nil {
-			fmt.Println("NIL IT IS")
-		}
 
 		if tr.muted {
 			continue

@@ -12,7 +12,6 @@ import (
 	"stepframe/seq"
 	"stepframe/ui"
 	"syscall"
-	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -24,25 +23,36 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 
-	mdi := midi.NewOut(1)
+	mdi := midi.NewSender()
+	mdi.Run(ctx)
+	defer mdi.Wait()
 
 	clk := clock.NewInternalClock(InternalPPQN, 120, 256)
 	clk.Run(ctx)
+	defer clk.Wait()
 
 	sqr := seq.NewSequencer(clk, InternalPPQN/MidiPPQN)
-	sqr.Run(ctx, mdi.SendEvent)
+	sqr.Run(ctx, mdi.Send)
+	defer sqr.Wait()
 
 	// TODO TESTS REMOVE ME
-	time.AfterFunc(time.Millisecond*100, func() {
-		sqr.Commands() <- seq.Command{
-			Id:    seq.CmdAdd,
-			Track: getBillieJeanLeadTrack(),
+	// open and list all Midi ports
+	for _, p := range midi.AllPorts() {
+		fmt.Printf("PORT[%d]: %s\n", p.Id, p.Name)
+		mdi.Commands() <- midi.Command{
+			Id:   midi.CmdOpenPort,
+			Port: p.Id,
 		}
-		sqr.Commands() <- seq.Command{
-			Id:    seq.CmdAdd,
-			Track: getBillieJeanBassTrack(),
-		}
-	})
+	}
+	// add some tracks
+	sqr.Commands() <- seq.Command{
+		Id:    seq.CmdAdd,
+		Track: getBillieJeanLeadTrack(),
+	}
+	sqr.Commands() <- seq.Command{
+		Id:    seq.CmdAdd,
+		Track: getBillieJeanBassTrack(),
+	}
 	// TODO END ---
 
 	gui := ui.New(sqr)
@@ -61,9 +71,6 @@ func main() {
 	}
 
 	stop()
-
-	clk.Wait()
-	sqr.Wait()
 
 	fmt.Println("GRACEFUL EXIT")
 }

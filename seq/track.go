@@ -36,6 +36,10 @@ func (t *Track) SetChannel(ch uint8) {
 	t.channel = ch
 }
 
+func (t *Track) SetPort(port int) {
+	t.port = port
+}
+
 func (t *Track) Append(steps ...Step) {
 	t.steps = append(t.steps, steps...)
 }
