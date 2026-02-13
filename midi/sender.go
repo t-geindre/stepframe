@@ -62,7 +62,9 @@ func (s *Sender) Wait() {
 	if done == nil {
 		return
 	}
+
 	<-done
+	s.drainEvents(nil)
 }
 
 func (s *Sender) Commands() chan<- Command {
@@ -78,7 +80,6 @@ func (s *Sender) run(ctx context.Context, done chan struct{}) {
 	for {
 		select {
 		case <-ctx.Done():
-			s.drainEvents(nil)
 			return
 		case e := <-s.queue:
 			s.drainEvents(&e)
