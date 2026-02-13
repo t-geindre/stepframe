@@ -6,6 +6,8 @@ import (
 	"sync/atomic"
 )
 
+const TimeSignature = 4 // Todo make it configurable
+
 type Sequencer struct {
 	tracks      []*TrackState
 	clock       clock.Clock
@@ -197,7 +199,7 @@ func (s *Sequencer) stopTrackAt(now int64, id TrackId, at CommandAt) {
 func (s *Sequencer) getAtTick(now int64, at CommandAt) int64 {
 	switch at {
 	case CmdAtNextBar:
-		ppqn := s.clock.GetTicksPerQuarter() * 4 // todo assume 4/4 time signature for now
+		ppqn := s.clock.GetTicksPerQuarter() * TimeSignature
 
 		rem := now % ppqn
 		if rem == 0 {

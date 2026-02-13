@@ -65,6 +65,10 @@ func (s *Sender) Wait() {
 
 	<-done
 	s.drainEvents(nil)
+	// close all ports
+	for port := range s.ports {
+		s.closePort(port)
+	}
 }
 
 func (s *Sender) Commands() chan<- Command {
@@ -184,9 +188,13 @@ func (s *Sender) handleCommand(c Command) {
 		}
 
 	case CmdClosePort:
-		if p, ok := s.ports[c.Port]; ok {
-			_ = p.close()
-			delete(s.ports, c.Port)
-		}
+		s.closePort(c.Port)
+	}
+}
+
+func (s *Sender) closePort(port int) {
+	if p, ok := s.ports[port]; ok {
+		p.close()
+		delete(s.ports, port)
 	}
 }
