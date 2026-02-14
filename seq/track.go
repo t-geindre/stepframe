@@ -27,10 +27,9 @@ type Track struct {
 	loopTick int64
 }
 
-func NewTrack(id TrackId, name string) *Track {
+func NewTrack(name string) *Track {
 	return &Track{
 		name: name,
-		id:   id,
 	}
 }
 
@@ -42,6 +41,10 @@ func (t *Track) SetChannel(ch uint8) {
 
 func (t *Track) SetPort(port int) {
 	t.port = port
+}
+
+func (t *Track) SetId(id TrackId) {
+	t.id = id
 }
 
 func (t *Track) Append(steps ...Step) {

@@ -47,7 +47,7 @@ func main() {
 	}
 	// TODO END ---
 
-	gui := ui.New(sqr)
+	gui := ui.New(clk, sqr)
 	update := game.NewUpdateFunc(func() error {
 		gui.Update()
 		if ctx.Err() != nil {

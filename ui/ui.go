@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"stepframe/clock"
 	"stepframe/seq"
 	"stepframe/ui/layout"
 	"stepframe/ui/theme"
@@ -10,17 +11,19 @@ import (
 )
 
 type Ui struct {
-	seq  *seq.Sequencer
-	grid *Grid
-	main *widget.Container
+	seq   *seq.Sequencer
+	grid  *Grid
+	main  *widget.Container
+	clock clock.Clock
 }
 
-func New(sqr *seq.Sequencer) *ebitenui.UI {
+func New(clk clock.Clock, sqr *seq.Sequencer) *ebitenui.UI {
 	var ui *Ui
 	th := theme.NewDefaultTheme()
 	ui = &Ui{
-		seq:  sqr,
-		grid: NewGrid(th, sqr),
+		seq:   sqr,
+		clock: clk,
+		grid:  NewGrid(th, sqr),
 		main: layout.NewMain(th, widget.ContainerOpts.WidgetOpts(
 			widget.WidgetOpts.OnUpdate(func(w widget.HasWidget) {
 				ui.Update()
@@ -30,13 +33,20 @@ func New(sqr *seq.Sequencer) *ebitenui.UI {
 
 	// TODO TESTS REMOVE ME
 	// Add some tracks
-	sqr.Commands() <- seq.Command{
-		Id:    seq.CmdAdd,
-		Track: getBillieJeanLeadTrack(),
-	}
-	sqr.Commands() <- seq.Command{
-		Id:    seq.CmdAdd,
-		Track: getBillieJeanBassTrack(),
+	id := seq.TrackId(0)
+	for _, track := range []*seq.Track{
+		getBillieJeanBassTrack(),
+		getBillieJeanLeadTrack(),
+		getBillieJeanLeadTrackWithRatchet(clk),
+		getBillieJeanLeadTrackWithRatchetDouble(clk),
+	} {
+		track.SetId(id)
+		id++
+
+		sqr.Commands() <- seq.Command{
+			Id:    seq.CmdAdd,
+			Track: track,
+		}
 	}
 	// TODO END ---
 
