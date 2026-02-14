@@ -3,6 +3,7 @@ package theme
 import (
 	img "image"
 	"image/color"
+	"time"
 
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/utilities/constantutil"
@@ -56,6 +57,13 @@ func NewDefaultTheme() *Theme {
 
 	// Widget background (panel)
 	cWidgetPanelBg := colornames.Black
+
+	// Play state colors
+	cPlayPlaying := color.RGBA{R: 0x22, G: 0xC5, B: 0x5E, A: 0xFF}
+	cPlayStopped := color.RGBA{R: 0xEF, G: 0x44, B: 0x44, A: 0xFF}
+	cPlayArmed := color.RGBA{R: 0xF5, G: 0x9E, B: 0x0B, A: 0xFF}
+	cPlayNone := colornames.Black
+	cPulse := colornames.White
 
 	// ICONS
 	iconsBuilder := NewIconsBuilder()
@@ -219,6 +227,15 @@ func NewDefaultTheme() *Theme {
 			IconSpacing:   5,
 			Font:          menuFace,
 			TextColor:     cText,
+		},
+		PlayTheme: &PlayTheme{
+			Playing:       NewNineSliceRounded(cPlayPlaying, 10),
+			Stopped:       NewNineSliceRounded(cPlayStopped, 10),
+			Armed:         NewNineSliceRounded(cPlayArmed, 10),
+			None:          NewNineSliceRounded(cPlayNone, 10),
+			Pulse:         NewNineSliceRounded(cPulse, 10),
+			PulseStrength: 0.45,
+			PulseDuration: 150 * time.Millisecond,
 		},
 	}
 }

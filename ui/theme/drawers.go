@@ -96,3 +96,36 @@ func getComboListButtonImage(bgCol, borderCol, arrowCol color.Color) *image.Nine
 
 	return image.NewNineSlice(i, ws, hs)
 }
+
+func NewNineSliceRounded(col color.Color, radius int) *image.NineSlice {
+	if radius <= 0 {
+		img := ebiten.NewImage(1, 1)
+		img.Fill(col)
+		return image.NewNineSlice(img, [3]int{0, 1, 0}, [3]int{0, 1, 0})
+	}
+
+	size := 2*radius + 1
+	img := ebiten.NewImage(size, size)
+
+	vector.FillRect(img,
+		float32(radius), 0,
+		float32(size-2*radius), float32(size),
+		col, true,
+	)
+	vector.FillRect(img,
+		0, float32(radius),
+		float32(size), float32(size-2*radius),
+		col, true,
+	)
+
+	r := float32(radius)
+	max := float32(size - 1)
+
+	vector.FillCircle(img, r, r, r, col, true)         // top-left
+	vector.FillCircle(img, max-r, r, r, col, true)     // top-right
+	vector.FillCircle(img, r, max-r, r, col, true)     // bottom-left
+	vector.FillCircle(img, max-r, max-r, r, col, true) // bottom-right
+
+	// 9-slice bands: corners fixed (radius), center stretch (1px)
+	return image.NewNineSlice(img, [3]int{radius, 1, radius}, [3]int{radius, 1, radius})
+}

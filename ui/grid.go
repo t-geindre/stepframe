@@ -24,7 +24,7 @@ func NewGrid(th *theme.Theme, sqr *seq.Sequencer) *Grid {
 
 	for i := 0; i < 16; i++ {
 		btn := widgets.NewPlay(th)
-		btn.GetWidget().MouseButtonClickedEvent.AddHandler(func(args interface{}) {
+		btn.GetWidget().MouseButtonClickedEvent.AddHandler(func(args any) {
 			g.Click(btn)
 		})
 		g.Container.AddChild(btn)

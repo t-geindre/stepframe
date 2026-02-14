@@ -64,6 +64,9 @@ func (s *Sender) Wait() {
 	}
 
 	<-done
+	// ensure all remaining events are sent
+	time.Sleep(time.Millisecond * 5)
+
 	s.drainEvents(nil)
 	// close all ports
 	for port := range s.ports {
@@ -194,7 +197,7 @@ func (s *Sender) handleCommand(c Command) {
 
 func (s *Sender) closePort(port int) {
 	if p, ok := s.ports[port]; ok {
-		p.close()
+		_ = p.close()
 		delete(s.ports, port)
 	}
 }

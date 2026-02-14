@@ -1,24 +1,13 @@
 package widgets
 
 import (
-	img "image"
-	"image/color"
 	"stepframe/seq"
 	"stepframe/ui/theme"
 	"time"
 
 	"github.com/ebitenui/ebitenui/widget"
 	"github.com/hajimehoshi/ebiten/v2"
-	"golang.org/x/image/colornames"
 )
-
-// Playing #22C55E or #00C853
-// Stopped #EF4444 or #D50000
-// Armed #F59E0B or #FFB300
-
-var green = color.RGBA{R: 0x22, G: 0xC5, B: 0x5E, A: 0xFF}
-var red = color.RGBA{R: 0xEF, G: 0x44, B: 0x44, A: 0xFF}
-var orange = color.RGBA{R: 0xF5, G: 0x9E, B: 0x0B, A: 0xFF}
 
 type PlayState int
 
@@ -30,104 +19,85 @@ const (
 )
 
 type Play struct {
-	*widget.Widget
+	*widget.Container
+	icon      *widget.Graphic
 	state     PlayState
 	lastPulse time.Time
 	id        seq.TrackId
 	theme     *theme.Theme
 }
 
-func NewPlay(th *theme.Theme, opts ...widget.WidgetOpt) *Play {
-	return &Play{
-		Widget: widget.NewWidget(opts...),
-		state:  PlayStateNone,
-		theme:  th,
+func NewPlay(th *theme.Theme) *Play {
+	p := &Play{
+		Container: widget.NewContainer(
+			widget.ContainerOpts.BackgroundImage(th.PlayTheme.None),
+			widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		),
+		icon: widget.NewGraphic(
+			widget.GraphicOpts.Image(th.Icons[theme.IconPlus]),
+			widget.GraphicOpts.WidgetOpts(
+				widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
+					HorizontalPosition: widget.AnchorLayoutPositionCenter,
+					VerticalPosition:   widget.AnchorLayoutPositionCenter,
+				}),
+			),
+		),
+		state: PlayStateNone,
+		theme: th,
 	}
+
+	p.AddChild(p.icon)
+
+	return p
 }
 
 func (p *Play) Render(screen *ebiten.Image) {
-	dst := screen.SubImage(p.Widget.Rect).(*ebiten.Image)
+	p.Container.Render(screen)
 
-	switch p.state {
-	case PlayStateStopped:
-		p.Fill(dst, red, false)
-		p.drawIcon(p.theme.Icons[theme.IconPlay], dst)
-	case PlayStatePlaying:
-		p.Fill(dst, green, true)
-		p.drawIcon(p.theme.Icons[theme.IconStop], dst)
-	case PlayStateArmed:
-		p.Fill(dst, orange, true)
-		p.drawIcon(p.theme.Icons[theme.IconPause], dst)
-	case PlayStateNone:
-		p.Fill(dst, colornames.Black, false)
-		p.drawIcon(p.theme.Icons[theme.IconPlus], dst)
+	if p.state != PlayStatePlaying && p.state != PlayStateArmed {
+		return
 	}
-}
 
-func (p *Play) Fill(dst *ebiten.Image, col color.Color, pulse bool) {
-	const PulseDuration = 100 * time.Millisecond
-	const PulseStrength = 0.45 // 0..1
-
-	// base fill
-	dst.Fill(col)
-
-	if !pulse || p.lastPulse.IsZero() {
+	if p.lastPulse.IsZero() {
 		return
 	}
 
 	elapsed := time.Since(p.lastPulse)
-	if elapsed <= 0 || elapsed >= PulseDuration {
+	if elapsed <= 0 || elapsed >= p.theme.PlayTheme.PulseDuration {
 		return
 	}
 
-	t := 1.0 - float64(elapsed)/float64(PulseDuration)
+	t := 1.0 - float64(elapsed)/float64(p.theme.PlayTheme.PulseDuration)
+	alpha := t * p.theme.PlayTheme.PulseStrength
 
-	intensity := t * PulseStrength
+	if alpha <= 0 {
+		return
+	}
 
-	r, g, b, a := rgba8(col)
-	pr := lerp8(r, 0xFF, intensity)
-	pg := lerp8(g, 0xFF, intensity)
-	pb := lerp8(b, 0xFF, intensity)
-
-	dst.Fill(color.RGBA{R: pr, G: pg, B: pb, A: a})
-}
-
-func (p *Play) drawIcon(i, dst *ebiten.Image) {
 	r := p.GetWidget().Rect
-	op := &ebiten.DrawImageOptions{}
+	dst := screen.SubImage(r).(*ebiten.Image)
 
-	rectW := r.Dx()
-	rectH := r.Dy()
-	imgW, imgH := i.Bounds().Dx(), i.Bounds().Dy()
-
-	x := r.Min.X + (rectW-imgW)/2
-	y := r.Min.Y + (rectH-imgH)/2
-
-	op.GeoM.Translate(float64(x), float64(y))
-
-	dst.DrawImage(i, op)
-}
-
-func (p *Play) GetWidget() *widget.Widget {
-	return p.Widget
-}
-
-func (p *Play) PreferredSize() (int, int) {
-	return 200, 200
-}
-
-func (p *Play) SetLocation(rect img.Rectangle) {
-	p.Widget.SetLocation(rect)
-}
-
-func (p *Play) Validate() {
-}
-
-func (p *Play) Update(updObj *widget.UpdateObject) {
-	p.Widget.Update(updObj)
+	p.theme.PlayTheme.Pulse.Draw(dst, r.Dx(), r.Dy(), func(opts *ebiten.DrawImageOptions) {
+		opts.ColorScale.Scale(float32(alpha), float32(alpha), float32(alpha), float32(alpha))
+		opts.GeoM.Translate(float64(r.Min.X), float64(r.Min.Y))
+	})
 }
 
 func (p *Play) SetState(state PlayState) {
+	switch state {
+	case PlayStateStopped:
+		p.Container.SetBackgroundImage(p.theme.PlayTheme.Stopped)
+		p.icon.Image = p.theme.Icons[theme.IconPlay]
+	case PlayStatePlaying:
+		p.Container.SetBackgroundImage(p.theme.PlayTheme.Playing)
+		p.icon.Image = p.theme.Icons[theme.IconStop]
+	case PlayStateArmed:
+		p.Container.SetBackgroundImage(p.theme.PlayTheme.Armed)
+		p.icon.Image = p.theme.Icons[theme.IconPause]
+	case PlayStateNone:
+		p.Container.SetBackgroundImage(p.theme.PlayTheme.None)
+		p.icon.Image = p.theme.Icons[theme.IconPlus]
+	}
 	p.state = state
 }
 
@@ -145,20 +115,4 @@ func (p *Play) SetId(id seq.TrackId) {
 
 func (p *Play) Id() seq.TrackId {
 	return p.id
-}
-
-// UTILS
-func lerp8(from, to uint8, t float64) uint8 {
-	if t <= 0 {
-		return from
-	}
-	if t >= 1 {
-		return to
-	}
-	return uint8(float64(from) + (float64(to)-float64(from))*t)
-}
-
-func rgba8(c color.Color) (r, g, b, a uint8) {
-	R, G, B, A := c.RGBA() // 0..65535
-	return uint8(R >> 8), uint8(G >> 8), uint8(B >> 8), uint8(A >> 8)
 }
