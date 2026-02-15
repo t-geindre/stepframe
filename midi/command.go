@@ -5,11 +5,13 @@ type CommandId int
 const (
 	CmdOpenPort CommandId = iota
 	CmdClosePort
+	CmdForward
 )
 
 type Command struct {
-	Id   CommandId
-	Port int
+	Id      CommandId
+	Port    int // int
+	PortOut int
 }
 
 type ResultId int

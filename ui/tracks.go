@@ -50,7 +50,7 @@ func getBillieJeanLeadTrackWithRatchet(clk clock.Clock) *seq.Track {
 func getBillieJeanLeadTrackWithRatchetDouble(clk clock.Clock) *seq.Track {
 	t := getBillieJeanLeadTrack()
 	rat := seq.NewRatchet(clk, 2)
-	rat.Intervals = []int{0}
+	rat.Intervals = []int{12, 7}
 	t.Finalize(rat)
 	return t
 }

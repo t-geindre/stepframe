@@ -1,7 +1,9 @@
 package ui
 
 import (
+	"fmt"
 	"stepframe/clock"
+	"stepframe/midi"
 	"stepframe/seq"
 	"stepframe/ui/layout"
 	"stepframe/ui/theme"
@@ -11,13 +13,15 @@ import (
 )
 
 type Ui struct {
-	seq   *seq.Sequencer
-	grid  *Grid
-	main  *widget.Container
-	clock clock.Clock
+	seq      *seq.Sequencer
+	grid     *Grid
+	main     *widget.Container
+	clock    clock.Clock
+	sender   *midi.Sender
+	receiver *midi.Receiver
 }
 
-func New(clk clock.Clock, sqr *seq.Sequencer) *ebitenui.UI {
+func New(clk clock.Clock, sqr *seq.Sequencer, sd *midi.Sender, rc *midi.Receiver) *ebitenui.UI {
 	var ui *Ui
 	th := theme.NewDefaultTheme()
 	ui = &Ui{
@@ -32,6 +36,20 @@ func New(clk clock.Clock, sqr *seq.Sequencer) *ebitenui.UI {
 	}
 
 	// TODO TESTS REMOVE ME
+	// Display in/out ports
+	fmt.Println("MIDI OUT PORTS:")
+	for _, p := range midi.AllOutPorts() {
+		fmt.Printf(" - PORT[%d]: %s\n", p.Id, p.Name)
+	}
+	fmt.Println("MIDI IN PORTS:")
+	for _, p := range midi.AllInPorts() {
+		fmt.Printf(" _ PORT[%d]: %s\n", p.Id, p.Name)
+	}
+	// open ports
+	sd.Commands() <- midi.Command{Id: midi.CmdOpenPort, Port: 1} // out
+	rc.Commands() <- midi.Command{Id: midi.CmdOpenPort, Port: 2} // in
+	// forward
+	rc.Commands() <- midi.Command{Id: midi.CmdForward, Port: 2, PortOut: 1}
 	// Add some tracks
 	id := seq.TrackId(0)
 	for _, track := range []*seq.Track{

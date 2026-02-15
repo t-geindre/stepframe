@@ -24,30 +24,23 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 
-	mdi := midi.NewSender(800 * time.Microsecond)
-	mdi.Run(ctx)
-	defer mdi.Wait()
+	sender := midi.NewSender(800 * time.Microsecond)
+	sender.Run(ctx)
+	defer sender.Wait()
+
+	receiver := midi.NewReceiver(sender)
+	receiver.Run(ctx)
+	defer receiver.Wait()
 
 	clk := clock.NewInternalClock(InternalPPQN, 120, 256)
 	clk.Run(ctx)
 	defer clk.Wait()
 
 	sqr := seq.NewSequencer(clk, InternalPPQN/MidiPPQN)
-	sqr.Run(ctx, mdi.Send)
+	sqr.Run(ctx, sender.Send)
 	defer sqr.Wait()
 
-	// TODO TESTS REMOVE ME
-	// open and list all Midi ports
-	for _, p := range midi.AllPorts() {
-		fmt.Printf("PORT[%d]: %s\n", p.Id, p.Name)
-		mdi.Commands() <- midi.Command{
-			Id:   midi.CmdOpenPort,
-			Port: p.Id,
-		}
-	}
-	// TODO END ---
-
-	gui := ui.New(clk, sqr)
+	gui := ui.New(clk, sqr, sender, receiver)
 	update := game.NewUpdateFunc(func() error {
 		gui.Update()
 		if ctx.Err() != nil {
