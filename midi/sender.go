@@ -2,171 +2,82 @@ package midi
 
 import (
 	"context"
-	"stepframe/seq"
-	"sync/atomic"
+	"stepframe/async"
 	"time"
 
+	"github.com/rs/zerolog"
 	"gitlab.com/gomidi/midi/v2"
-	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv" // autoregister driver
 )
 
-type message struct {
-	port int
-	msg  midi.Message
-}
-
 type Sender struct {
-	ports    map[int]*Port
-	done     chan struct{}
-	running  atomic.Bool
-	queue    chan message
-	commands chan Command
+	async *async.Async[Command, Event]
+	*async.Expose[Command, Event]
+
+	port     int
+	close    func() error
+	send     func(midi.Message) error
 	stagger  time.Duration
-	lastSend map[int]time.Time
+	lastSend time.Time
+	logger   zerolog.Logger
 }
 
-func NewSender(stagger time.Duration) *Sender {
+func NewSender(logger zerolog.Logger, stagger time.Duration) *Sender {
+	logger = logger.With().Str("component", "midi sender").Logger()
+	as := async.NewAsync[Command, Event](logger, 16)
+
 	return &Sender{
-		ports:    make(map[int]*Port),
-		queue:    make(chan message, 1024),
-		commands: make(chan Command, 16),
-		stagger:  stagger,
-		lastSend: make(map[int]time.Time),
-	}
-}
-
-func (s *Sender) Send(e seq.Event) {
-	if e.Type == seq.EvPanic {
-		for p, _ := range s.ports {
-			for ch := uint8(0); ch < 16; ch++ {
-				s.SendRaw(p, midi.ControlChange(ch, 120, 0)) // All Sound Off
-				s.SendRaw(p, midi.ControlChange(ch, 123, 0)) // All Notes Off
-			}
-		}
-		return
-	}
-
-	if e.Type == seq.EvNoteOff {
-		s.SendRaw(e.Port, midi.NoteOff(e.Channel, e.Note))
-	}
-
-	switch e.Type {
-	case seq.EvNoteOn:
-		s.SendRaw(e.Port, midi.NoteOn(e.Channel, e.Note, e.Vel))
-	case seq.EvNoteOff:
-		s.SendRaw(e.Port, midi.NoteOff(e.Channel, e.Note))
-	case seq.EvClock:
-		s.SendRaw(e.Port, midi.TimingClock())
-	default:
-		// TODO don't panic, log error
-		panic(ErrUnknownEventType)
-	}
-}
-
-func (s *Sender) SendRaw(port int, msg midi.Message) {
-	if port == 0 {
-		return
-	}
-	s.queue <- message{
-		port: port,
-		msg:  msg,
+		async:   as,
+		Expose:  async.NewExpose(as),
+		stagger: stagger,
+		logger:  logger,
+		port:    -1,
 	}
 }
 
 func (s *Sender) Run(ctx context.Context) {
-	if !s.running.CompareAndSwap(false, true) {
-		return
+	if ok := s.async.CanRun(); !ok {
+		panic(ErrAlreadyRunning) // intentional panic
 	}
 
-	done := make(chan struct{})
-	s.done = done
-
-	go s.run(ctx, done)
+	go s.run(ctx)
 }
 
 func (s *Sender) Wait() {
-	done := s.done
-	if done == nil {
-		return
-	}
+	s.async.Wait()
 
-	<-done
-	// ensure all remaining events are sent
-	time.Sleep(time.Millisecond * 5)
+	// best-effort: drain remaining commands before marking Done
+	s.logger.Info().Msg("draining remaining commands")
+	s.drainCommands()
+	s.closePort()
 
-	s.drainMessages(nil)
-	// close all ports
-	for port := range s.ports {
-		s.closePort(port)
-	}
+	s.logger.Info().Msg("done")
 }
 
-func (s *Sender) Commands() chan<- Command {
-	return s.commands
-}
-
-func (s *Sender) run(ctx context.Context, done chan struct{}) {
+func (s *Sender) run(ctx context.Context) {
 	defer func() {
-		close(done) // close local done
-		s.running.Store(false)
+		s.async.Done()
+		s.logger.Info().Msg("stopped")
 	}()
+
+	s.logger.Info().Msg("running")
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case m := <-s.queue:
-			s.drainMessages(&m)
-		case cmd := <-s.commands:
-			s.drainCommands(cmd)
+		case cmd := <-s.async.Commands():
+			s.handleCommand(cmd)
+			s.drainCommands()
 		}
 	}
 }
 
-func (s *Sender) drainMessages(m *message) {
-	if m != nil {
-		s.handleMessage(*m)
-	}
+func (s *Sender) drainCommands() {
+	cmds := s.async.Commands()
+
 	for i := 0; i < 1024; i++ { // prevent starvation
 		select {
-		case m := <-s.queue:
-			s.handleMessage(m)
-		default:
-			return
-		}
-	}
-}
-
-func (s *Sender) handleMessage(m message) {
-	port, ok := s.ports[m.port]
-	if !ok {
-		// TODO don't panic, log error
-		panic(ErrPortNotFound)
-	}
-
-	// --- STAGGER: ensure we don't flood the same port ---
-	if s.stagger > 0 {
-		if last, ok := s.lastSend[m.port]; ok {
-			elapsed := time.Since(last)
-			if elapsed < s.stagger {
-				time.Sleep(s.stagger - elapsed)
-			}
-		}
-	}
-
-	if err := port.send(m.msg); err != nil {
-		// TODO don't panic, log error
-		panic("MIDI Send error: " + err.Error())
-	}
-
-	s.lastSend[m.port] = time.Now()
-}
-
-func (s *Sender) drainCommands(c Command) {
-	s.handleCommand(c)
-	for i := 0; i < 1024; i++ { // prevent starvation
-		select {
-		case c := <-s.commands:
+		case c := <-cmds:
 			s.handleCommand(c)
 		default:
 			return
@@ -177,32 +88,85 @@ func (s *Sender) drainCommands(c Command) {
 func (s *Sender) handleCommand(c Command) {
 	switch c.Id {
 	case CmdOpenPort:
-		out, err := midi.OutPort(c.Port)
-		if err != nil {
-			// TODO don't panic, log error
-			panic("MIDI OpenPort error: " + err.Error())
-		}
-		send, err := midi.SendTo(out)
-		if err != nil {
-			// TODO don't panic, log error
-			panic("MIDI OpenPort error: " + err.Error())
-		}
-		s.ports[c.Port] = &Port{
-			send:  send,
-			close: out.Close,
-		}
-
+		s.openPort(c.Port)
 	case CmdClosePort:
-		s.closePort(c.Port)
+		s.closePort()
+	case CmdMessage:
+		s.sendMessage(c.Msg)
 	default:
-		// TODO don't panic, log error
-		panic(ErrUnknownCommand)
+		s.logger.Err(ErrUnknownCommand).Msg("unknown command")
 	}
 }
 
-func (s *Sender) closePort(port int) {
-	if p, ok := s.ports[port]; ok {
-		_ = p.close()
-		delete(s.ports, port)
+func (s *Sender) openPort(id int) {
+	s.closePort()
+	logger := s.logger.With().Int("port", id).Logger()
+
+	out, err := midi.OutPort(id)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to open port")
+		return
 	}
+
+	send, err := midi.SendTo(out)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to create sender")
+		_ = out.Close() // best-effort cleanup
+		return
+	}
+
+	s.port = id
+	s.close = out.Close
+	s.send = send
+
+	s.logger.Info().Int("port", s.port).Msg("port opened")
+	s.async.TryDispatch(Event{Id: EvPortOpened, Port: id})
+}
+
+func (s *Sender) closePort() {
+	if s.close == nil {
+		return
+	}
+
+	err := s.close()
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to close port")
+		return
+	}
+
+	s.close = nil
+	s.send = nil
+
+	s.logger.Info().Int("port", s.port).Msg("port closed")
+	s.async.TryDispatch(Event{Id: EvPortClosed, Port: s.port})
+
+	s.port = -1
+}
+
+func (s *Sender) sendMessage(m midi.Message) {
+	if s.send == nil {
+		s.logger.Err(ErrPortNotFound).Msg("no port open, cannot send message")
+		return
+	}
+
+	if s.stagger > 0 && !s.lastSend.IsZero() {
+		// stager enabled: flood avoidance
+		elapsed := time.Since(s.lastSend)
+		if elapsed < s.stagger {
+			time.Sleep(s.stagger - elapsed)
+		}
+	}
+
+	if s.logger.GetLevel() <= zerolog.DebugLevel {
+		// avoid unnecessary string allocation
+		s.logger.Debug().Str("msg", m.String()).Msg("send midi message")
+	}
+
+	err := s.send(m)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("failed to send message")
+		return
+	}
+
+	s.lastSend = time.Now()
 }

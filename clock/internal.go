@@ -3,29 +3,35 @@ package clock
 import (
 	"context"
 	"math"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/rs/zerolog"
 )
 
-// todo runtime.GOMAXPROCS(1) may reduce scheduler jitter (may affect GC performance, so test)
-
 type Internal struct {
+	done    chan struct{} // clock is done
+	running atomic.Bool
+
+	logger zerolog.Logger
+
 	ppqn     int64
 	bpm      atomic.Uint64 // lock-free (float64 bits)
 	ticks    chan Tick
 	stopOnce sync.Once
-	stopCh   chan struct{} // close to stop
-	done     chan struct{} // clock is done
-	running  atomic.Bool
+
+	dropTicks bool
 }
 
-func NewInternalClock(ppqn int64, bpm float64, buffer int) *Internal {
+func NewInternalClock(logger zerolog.Logger, ppqn int64, bpm float64, buffer int, dropTicks bool) *Internal {
 	c := &Internal{
-		ppqn:   ppqn,
-		ticks:  make(chan Tick, buffer),
-		stopCh: make(chan struct{}),
-		done:   make(chan struct{}),
+		logger:    logger.With().Str("component", "internal clock").Logger(),
+		ppqn:      ppqn,
+		ticks:     make(chan Tick, buffer),
+		done:      make(chan struct{}),
+		dropTicks: dropTicks,
 	}
 	c.SetBPM(bpm)
 	return c
@@ -59,55 +65,134 @@ func (c *Internal) Wait() {
 	<-c.done
 }
 
-func (c *Internal) tickDuration() time.Duration {
-	bpm := c.BPM()
+func (c *Internal) tickDurationFromBits(bpmBits uint64) time.Duration {
+	bpm := math.Float64frombits(bpmBits)
+	if !(bpm > 0) || math.IsNaN(bpm) || math.IsInf(bpm, 0) {
+		bpm = 120
+	}
+	if c.ppqn <= 0 {
+		return time.Second
+	}
 	tps := (bpm / 60.0) * float64(c.ppqn)
+	if !(tps > 0) || math.IsNaN(tps) || math.IsInf(tps, 0) {
+		return time.Second
+	}
 	secPerTick := 1.0 / tps
-	return time.Duration(secPerTick * float64(time.Second))
+	d := time.Duration(secPerTick * float64(time.Second))
+	if d <= 0 {
+		return time.Nanosecond
+	}
+	return d
+}
+
+func sleepUntilCtx(ctx context.Context, deadline time.Time) bool {
+	const spinThreshold = 300 * time.Microsecond
+
+	for {
+		now := time.Now()
+		remain := deadline.Sub(now)
+		if remain <= 0 {
+			return true
+		}
+		if remain > spinThreshold {
+			t := time.NewTimer(remain - spinThreshold)
+			select {
+			case <-ctx.Done():
+				t.Stop()
+				return false
+			case <-t.C:
+			}
+			continue
+		}
+		for time.Now().Before(deadline) {
+			select {
+			case <-ctx.Done():
+				return false
+			default:
+				runtime.Gosched()
+			}
+		}
+		return true
+	}
+}
+
+func (c *Internal) sendTick(ctx context.Context, t Tick) bool {
+	if c.dropTicks {
+		select {
+		case c.ticks <- t:
+		default:
+		}
+		return true
+	}
+
+	select {
+	case <-ctx.Done():
+		return false
+	case c.ticks <- t:
+		return true
+	}
 }
 
 func (c *Internal) run(ctx context.Context) {
-	defer close(c.done)
+	defer func() {
+		close(c.done)
+		c.logger.Info().Msg("stopped")
+	}()
+
+	c.logger.Info().Msg("running")
 
 	start := time.Now()
-	var tick int64 = 0
-	next := start
+	baseTime := start
+	var sentTick int64 = -1
+
+	lastBpmBits := c.bpm.Load()
+	tickDur := c.tickDurationFromBits(lastBpmBits)
 
 	for {
 		select {
 		case <-ctx.Done():
 			close(c.ticks)
 			return
-		case <-c.stopCh:
-			close(c.ticks)
-			return
 		default:
 		}
-
-		tickDur := c.tickDuration()
-		if tick == 0 {
-			next = start
-		} else {
-			next = next.Add(tickDur)
-		}
-
-		sleepUntil(next)
 
 		now := time.Now()
-
-		select {
-		case c.ticks <- Tick{N: tick, When: now.UnixNano()}:
-		default:
-			// no consumer ready, skip tick
+		elapsed := now.Sub(baseTime)
+		if elapsed < 0 {
+			elapsed = 0
 		}
 
-		tick++
+		curTick := int64(elapsed / tickDur)
+
+		bpmBits := c.bpm.Load()
+		if bpmBits != lastBpmBits {
+			lastBpmBits = bpmBits
+			tickDur = c.tickDurationFromBits(bpmBits)
+			baseTime = now.Add(-time.Duration(curTick) * tickDur)
+		}
+
+		nextTick := curTick + 1
+		next := baseTime.Add(time.Duration(nextTick) * tickDur)
+
+		if !sleepUntilCtx(ctx, next) {
+			close(c.ticks)
+			return
+		}
+
+		emitNow := time.Now()
+		emitTick := int64(emitNow.Sub(baseTime) / tickDur)
+		if emitTick < nextTick {
+			emitTick = nextTick
+		}
+
+		for sentTick < emitTick {
+			sentTick++
+			if !c.sendTick(ctx, Tick{N: sentTick, When: emitNow.UnixNano()}) {
+				close(c.ticks)
+				return
+			}
+		}
 
 		// Drift catch-up
-		ideal := int64(time.Since(start) / tickDur)
-		if ideal-tick > 0 {
-			tick = ideal
-			next = start.Add(time.Duration(tick) * tickDur)
-		}
 	}
 }

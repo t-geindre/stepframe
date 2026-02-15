@@ -2,135 +2,111 @@ package midi
 
 import (
 	"context"
-	"sync/atomic"
+	"stepframe/async"
 
+	"github.com/rs/zerolog"
 	"gitlab.com/gomidi/midi/v2"
-	_ "gitlab.com/gomidi/midi/v2/drivers/rtmididrv" // autoregister driver
 )
 
-const ForwardNone = -1
-
 type Receiver struct {
-	ports    map[int]func()
-	done     chan struct{}
-	running  atomic.Bool
-	commands chan Command
-	sender   *Sender
-	forwards map[int]int // msg forwarding: in port -> out port
+	async *async.Async[Command, Event]
+	*async.Expose[Command, Event]
+
+	close  func()
+	port   int
+	logger zerolog.Logger
 }
 
-func NewReceiver(sd *Sender) *Receiver {
+func NewReceiver(logger zerolog.Logger) *Receiver {
+	logger = logger.With().Str("component", "midi receiver").Logger()
+	as := async.NewAsync[Command, Event](logger, 16)
+
 	return &Receiver{
-		ports:    make(map[int]func()),
-		commands: make(chan Command, 16),
-		forwards: make(map[int]int),
-		sender:   sd,
+		async:  as,
+		Expose: async.NewExpose(as),
+		logger: logger,
 	}
 }
 
 func (r *Receiver) Run(ctx context.Context) {
-	if !r.running.CompareAndSwap(false, true) {
-		return
+	if ok := r.async.CanRun(); !ok {
+		panic(ErrAlreadyRunning) // intentional panic
 	}
 
-	done := make(chan struct{})
-	r.done = done
-
-	go r.run(ctx, done)
+	go r.run(ctx)
 }
 
-func (r *Receiver) Wait() {
-	done := r.done
-	if done == nil {
-		return
-	}
-
-	<-done
-
-	for _, closePort := range r.ports {
-		closePort()
-	}
-}
-
-func (r *Receiver) Commands() chan<- Command {
-	return r.commands
-}
-
-func (r *Receiver) run(ctx context.Context, done chan struct{}) {
+func (r *Receiver) run(ctx context.Context) {
 	defer func() {
-		close(done) // close local done
-		r.running.Store(false)
+		r.closePort()
+		r.async.Done()
+		r.logger.Info().Msg("stopped")
 	}()
+
+	r.logger.Info().Msg("running")
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case cmd := <-r.commands:
-			r.drainCommands(cmd)
+		case cmd := <-r.async.Commands():
+			r.handleCommand(cmd)
 		}
 	}
 }
 
-func (r *Receiver) drainCommands(c Command) {
-	r.handleCommand(c)
-	for i := 0; i < 1024; i++ { // prevent starvation
-		select {
-		case c := <-r.commands:
-			r.handleCommand(c)
-		default:
-			return
-		}
+func (r *Receiver) onMessage(msg midi.Message, ts int32) {
+	if r.logger.GetLevel() <= zerolog.DebugLevel {
+		// avoid unnecessary string allocation
+		r.logger.Debug().Str("msg", msg.String()).Int32("timestamp", ts).Msg("received midi message")
 	}
+
+	r.async.TryDispatch(Event{Id: EvMessage, Msg: msg})
 }
 
 func (r *Receiver) handleCommand(c Command) {
 	switch c.Id {
 	case CmdOpenPort:
-		if r.ports[c.Port] != nil {
-			return // already open
-		}
-
-		p := midi.GetInPorts()
-		if p[c.Port] == nil {
-			// TODO don't panic, log error
-			panic("Failed to open MIDI port: " + ErrPortNotFound.Error())
-		}
-
-		stop, err := midi.ListenTo(p[c.Port], func(msg midi.Message, ts int32) {
-			r.onMessage(c.Port, msg, ts)
-		})
-
-		if err != nil {
-			// TODO don't panic, log error
-			panic("Failed to open MIDI port: " + err.Error())
-		}
-
-		r.ports[c.Port] = stop
-
+		r.openPort(c.Port)
 	case CmdClosePort:
-		if r.ports[c.Port] == nil {
-			// TODO don't panic, log error
-			panic("Failed to close MIDI port: " + ErrPortNotFound.Error())
-		}
-
-		r.ports[c.Port]()
-
-	case CmdForward:
-		if c.PortOut == ForwardNone {
-			delete(r.forwards, c.Port)
-			break
-		}
-		r.forwards[c.Port] = c.PortOut
-
+		r.closePort()
 	default:
-		// TODO don't panic, log error
-		panic(ErrUnknownCommand)
+		r.logger.Error().Err(ErrUnknownCommand).Msg("unknown command")
 	}
 }
 
-func (r *Receiver) onMessage(p int, msg midi.Message, ts int32) {
-	if fwdPort, ok := r.forwards[p]; ok {
-		r.sender.SendRaw(fwdPort, msg)
+func (r *Receiver) openPort(id int) {
+	r.closePort()
+	logger := r.logger.With().Int("port", id).Logger()
+
+	ports := midi.GetInPorts()
+	if id < 0 || id >= len(ports) || ports[id] == nil {
+		logger.Error().Err(ErrPortNotFound).Msg("port not found")
+		return
 	}
+
+	var err error
+	r.close, err = midi.ListenTo(ports[id], r.onMessage)
+
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to open port")
+		return
+	}
+
+	r.port = id
+	r.async.TryDispatch(Event{Id: EvPortOpened, Port: id})
+
+	logger.Info().Msg("port opened")
+}
+
+func (r *Receiver) closePort() {
+	if r.close == nil {
+		return
+	}
+
+	r.close()
+	r.close = nil
+	r.async.TryDispatch(Event{Id: EvPortClosed, Port: r.port})
+
+	r.logger.Info().Int("port", r.port).Msg("port closed")
 }

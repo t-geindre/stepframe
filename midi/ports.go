@@ -5,10 +5,8 @@ import (
 )
 
 type Port struct {
-	Id    int
-	Name  string
-	send  func(midi.Message) error
-	close func() error
+	Id   int
+	Name string
 }
 
 func AllOutPorts() []Port {

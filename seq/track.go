@@ -2,6 +2,8 @@ package seq
 
 import (
 	"sort"
+
+	"gitlab.com/gomidi/midi/v2"
 )
 
 type Transformer interface {
@@ -15,6 +17,7 @@ type Step struct {
 	Note     uint8
 	Velocity uint8
 	GateTick int64
+	midi.Message
 }
 
 type Track struct {

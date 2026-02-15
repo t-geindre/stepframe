@@ -1,18 +1,25 @@
 package game
 
 import (
+	"context"
+	"errors"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/rs/zerolog"
 )
 
 type Game struct {
 	updater []Updater
 	drawer  []Drawer
 	layout  Layout
+	ctx     context.Context
 }
 
-func NewGame(obj ...any) *Game {
-	g := &Game{}
+func RunGame(logger zerolog.Logger, ctx context.Context, obj ...any) {
+	logger = logger.With().Str("component", "game").Logger()
+
+	g := &Game{ctx: ctx}
 
 	for _, o := range obj {
 		if u, ok := o.(Updater); ok {
@@ -26,10 +33,18 @@ func NewGame(obj ...any) *Game {
 		}
 	}
 
-	return g
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+	err := ebiten.RunGame(g)
+	if err != nil && !errors.Is(err, ebiten.Termination) {
+		logger.Err(err).Msg("failed to run game")
+	}
 }
 
 func (g *Game) Update() error {
+	if g.ctx.Err() != nil {
+		return ebiten.Termination
+	}
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) && ebiten.IsKeyPressed(ebiten.KeyAlt) {
 		ebiten.SetFullscreen(!ebiten.IsFullscreen())
 	}

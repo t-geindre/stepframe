@@ -47,9 +47,7 @@ func New(clk clock.Clock, sqr *seq.Sequencer, sd *midi.Sender, rc *midi.Receiver
 	}
 	// open ports
 	sd.Commands() <- midi.Command{Id: midi.CmdOpenPort, Port: 1} // out
-	rc.Commands() <- midi.Command{Id: midi.CmdOpenPort, Port: 2} // in
-	// forward
-	rc.Commands() <- midi.Command{Id: midi.CmdForward, Port: 2, PortOut: 1}
+	rc.TryCommand(midi.Command{Id: midi.CmdOpenPort, Port: 2})   // in
 	// Add some tracks
 	id := seq.TrackId(0)
 	for _, track := range []*seq.Track{
