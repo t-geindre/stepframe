@@ -3,10 +3,11 @@ package ui
 import (
 	"stepframe/clock"
 	"stepframe/seq"
+	"stepframe/track"
 )
 
-func getBillieJeanBassTrack() *seq.Track {
-	t := seq.NewTrack("Bass")
+func getBillieJeanBassTrack() *track.track {
+	t := track.NewTrack("Bass")
 	t.Append(
 		seq.Step{AtTick: 0, Note: 64 - 12, Velocity: 110, GateTick: 24},   // F#
 		seq.Step{AtTick: 48, Note: 59 - 12, Velocity: 110, GateTick: 24},  // C#
@@ -24,8 +25,8 @@ func getBillieJeanBassTrack() *seq.Track {
 	return t
 }
 
-func getBillieJeanLeadTrack() *seq.Track {
-	t := seq.NewTrack("Lead")
+func getBillieJeanLeadTrack() *track.track {
+	t := track.NewTrack("Lead")
 	t.Append(
 		seq.Step{AtTick: 0, Note: 64, Velocity: 110, GateTick: 144},   // E
 		seq.Step{AtTick: 144, Note: 66, Velocity: 110, GateTick: 240}, // F#
@@ -39,7 +40,7 @@ func getBillieJeanLeadTrack() *seq.Track {
 	return t
 }
 
-func getBillieJeanLeadTrackWithRatchet(clk clock.Clock) *seq.Track {
+func getBillieJeanLeadTrackWithRatchet(clk clock.Clock) *track.track {
 	t := getBillieJeanLeadTrack()
 	rat := seq.NewRatchet(clk, 1)
 	rat.Intervals = []int{0, 0, 7}
@@ -47,7 +48,7 @@ func getBillieJeanLeadTrackWithRatchet(clk clock.Clock) *seq.Track {
 	return t
 }
 
-func getBillieJeanLeadTrackWithRatchetDouble(clk clock.Clock) *seq.Track {
+func getBillieJeanLeadTrackWithRatchetDouble(clk clock.Clock) *track.track {
 	t := getBillieJeanLeadTrack()
 	rat := seq.NewRatchet(clk, 2)
 	rat.Intervals = []int{12, 7}

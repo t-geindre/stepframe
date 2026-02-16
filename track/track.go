@@ -1,0 +1,121 @@
+package track
+
+import (
+	"sort"
+
+	"gitlab.com/gomidi/midi/v2"
+)
+
+type Track interface {
+	Reset(globalTick0 int64)
+	LocalTick(globalTick int64) int64
+	AddEvent(atTick int64, msg midi.Message)
+	PollDue(globalTick int64) []midi.Message
+	GetBaseTick() int64
+}
+
+type event struct {
+	AtTick int64 // local in [0..lengthTick)
+	Msg    midi.Message
+}
+
+type track struct {
+	lengthTick int64
+	baseTick   int64 // global tick at which local tick == 0
+
+	events []event // sorted by AtTick
+	cursor int     // index of first event NOT YET passed in current cycle
+}
+
+func NewTrack(lengthTick int64) Track {
+	if lengthTick <= 0 {
+		panic("lengthTick must be > 0")
+	}
+	return &track{
+		lengthTick: lengthTick,
+		baseTick:   0,
+		events:     nil,
+		cursor:     0,
+	}
+}
+
+func (t *track) GetBaseTick() int64 {
+	return t.baseTick
+}
+
+func (t *track) Reset(globalTick0 int64) {
+	t.baseTick = globalTick0
+	t.cursor = 0
+}
+
+func (t *track) LocalTick(globalTick int64) int64 {
+	local := globalTick - t.baseTick
+	if t.lengthTick <= 0 {
+		return 0
+	}
+	local %= t.lengthTick
+	if local < 0 {
+		local += t.lengthTick
+	}
+	return local
+}
+
+func (t *track) AddEvent(atTick int64, msg midi.Message) {
+	if msg == nil {
+		return
+	}
+
+	// wrap into loop
+	atTick %= t.lengthTick
+	if atTick < 0 {
+		atTick += t.lengthTick
+	}
+
+	ev := event{AtTick: atTick, Msg: msg}
+
+	// insertion point: after all events with AtTick <= ev.AtTick (stable)
+	i := sort.Search(len(t.events), func(i int) bool {
+		return t.events[i].AtTick > ev.AtTick
+	})
+
+	t.events = append(t.events, event{})
+	copy(t.events[i+1:], t.events[i:])
+	t.events[i] = ev
+
+	if i <= t.cursor {
+		t.cursor++
+	}
+}
+
+func (t *track) PollDue(globalTick int64) []midi.Message {
+	if len(t.events) == 0 {
+		return nil
+	}
+
+	local := t.LocalTick(globalTick)
+
+	if local == 0 {
+		t.cursor = 0
+	}
+
+	if t.cursor < len(t.events) && t.events[t.cursor].AtTick < local {
+		t.cursor = sort.Search(len(t.events), func(i int) bool {
+			return t.events[i].AtTick >= local
+		})
+	}
+
+	start := t.cursor
+	for t.cursor < len(t.events) && t.events[t.cursor].AtTick == local {
+		t.cursor++
+	}
+
+	if t.cursor == start {
+		return nil
+	}
+
+	out := make([]midi.Message, 0, t.cursor-start)
+	for i := start; i < t.cursor; i++ {
+		out = append(out, t.events[i].Msg)
+	}
+	return out
+}

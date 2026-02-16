@@ -5,6 +5,7 @@ import (
 	"stepframe/clock"
 	"stepframe/midi"
 	"stepframe/seq"
+	"stepframe/track"
 	"stepframe/ui/layout"
 	"stepframe/ui/theme"
 
@@ -50,7 +51,7 @@ func New(clk clock.Clock, sqr *seq.Sequencer, sd *midi.Sender, rc *midi.Receiver
 	rc.TryCommand(midi.Command{Id: midi.CmdOpenPort, Port: 2})   // in
 	// Add some tracks
 	id := seq.TrackId(0)
-	for _, track := range []*seq.Track{
+	for _, track := range []*track.track{
 		getBillieJeanBassTrack(),
 		getBillieJeanLeadTrack(),
 		getBillieJeanLeadTrackWithRatchet(clk),

@@ -42,19 +42,10 @@ func (s *Sender) Run(ctx context.Context) {
 	go s.run(ctx)
 }
 
-func (s *Sender) Wait() {
-	s.async.Wait()
-
-	// best-effort: drain remaining commands before marking Done
-	s.logger.Info().Msg("draining remaining commands")
-	s.drainCommands()
-	s.closePort()
-
-	s.logger.Info().Msg("done")
-}
-
 func (s *Sender) run(ctx context.Context) {
 	defer func() {
+		s.closePort()
+
 		s.async.Done()
 		s.logger.Info().Msg("stopped")
 	}()
@@ -67,20 +58,6 @@ func (s *Sender) run(ctx context.Context) {
 			return
 		case cmd := <-s.async.Commands():
 			s.handleCommand(cmd)
-			s.drainCommands()
-		}
-	}
-}
-
-func (s *Sender) drainCommands() {
-	cmds := s.async.Commands()
-
-	for i := 0; i < 1024; i++ { // prevent starvation
-		select {
-		case c := <-cmds:
-			s.handleCommand(c)
-		default:
-			return
 		}
 	}
 }
@@ -128,16 +105,24 @@ func (s *Sender) closePort() {
 		return
 	}
 
+	logger := s.logger.With().Int("port", s.port).Logger()
+
+	logger.Info().Msg("all notes off")
+	for i := uint8(0); i < 16; i++ {
+		s.sendMessage(midi.ControlChange(i, 123, 0))
+		s.sendMessage(midi.ControlChange(i, 120, 0))
+	}
+
 	err := s.close()
 	if err != nil {
-		s.logger.Error().Err(err).Msg("failed to close port")
+		logger.Err(err).Msg("failed to close port")
 		return
 	}
 
 	s.close = nil
 	s.send = nil
 
-	s.logger.Info().Int("port", s.port).Msg("port closed")
+	logger.Info().Msg("port closed")
 	s.async.TryDispatch(Event{Id: EvPortClosed, Port: s.port})
 
 	s.port = -1

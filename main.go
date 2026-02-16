@@ -7,11 +7,11 @@ import (
 	"stepframe/clock"
 	"stepframe/game"
 	"stepframe/midi"
+	"stepframe/seq"
 	"syscall"
 	"time"
 
 	"github.com/rs/zerolog"
-	mdi "gitlab.com/gomidi/midi/v2"
 )
 
 func main() {
@@ -24,7 +24,6 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 
 	// TIMING
-	const MidiPPQN = 24 // Pulse per quarter note (PPQN)
 	const InternalPPQN = 96
 
 	clk := clock.NewInternalClock(logger, InternalPPQN, 120, 256, false)
@@ -45,29 +44,11 @@ func main() {
 	// TODO TEST
 	sender.TryCommand(midi.Command{Id: midi.CmdOpenPort, Port: 1})
 	receiver.TryCommand(midi.Command{Id: midi.CmdOpenPort, Port: 2})
-
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case ev := <-receiver.Events():
-				if ev.Id == midi.EvMessage {
-					sender.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: ev.Msg})
-				}
-			}
-		}
-	}()
-
-	defer func() {
-		sender.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: mdi.ControlChange(1, 123, 0)})
-		sender.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: mdi.ControlChange(1, 120, 0)})
-	}()
-
+	
 	// SEQUENCER
-	//sqr := seq.NewSequencer(clk, InternalPPQN/MidiPPQN)
-	//sqr.Run(ctx, sender.Send)
-	//defer sqr.Wait()
+	sqr := seq.NewSequencer(logger, clk, receiver, sender)
+	sqr.Run(ctx)
+	defer sqr.Wait()
 
 	// GUI
 	//gui := ui.New(clk, sqr, sender, receiver)
@@ -80,8 +61,6 @@ func main() {
 	//})
 
 	// RUN
-
 	game.RunGame(logger, ctx /*update, gui*/)
-
 	stop()
 }
