@@ -8,6 +8,7 @@ import (
 	"stepframe/game"
 	"stepframe/midi"
 	"stepframe/seq"
+	"stepframe/ui"
 	"syscall"
 	"time"
 
@@ -18,7 +19,7 @@ func main() {
 	// LOGGER todo: make level configurable
 	output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
 	logger := zerolog.New(output).With().Timestamp().Logger().Level(zerolog.DebugLevel)
-	defer logger.Info().Msg("exiting")
+	defer logger.Info().Msg("done")
 
 	// SIGNAL AWARE CONTEXT
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -44,23 +45,16 @@ func main() {
 	// TODO TEST
 	sender.TryCommand(midi.Command{Id: midi.CmdOpenPort, Port: 1})
 	receiver.TryCommand(midi.Command{Id: midi.CmdOpenPort, Port: 2})
-	
+
 	// SEQUENCER
 	sqr := seq.NewSequencer(logger, clk, receiver, sender)
 	sqr.Run(ctx)
 	defer sqr.Wait()
 
 	// GUI
-	//gui := ui.New(clk, sqr, sender, receiver)
-	//update := game.NewUpdateFunc(func() error {
-	//	gui.Update()
-	//	if ctx.Err() != nil {
-	//		return ebiten.Termination
-	//	}
-	//	return nil
-	//})
+	gui := ui.New(clk, sqr, sender, receiver, logger)
 
 	// RUN
-	game.RunGame(logger, ctx /*update, gui*/)
+	game.RunGame(logger, ctx, gui)
 	stop()
 }

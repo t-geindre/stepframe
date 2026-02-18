@@ -4,6 +4,10 @@ type Updater interface {
 	Update() error
 }
 
+type UpdaterWithoutError interface {
+	Update()
+}
+
 type updateFunc struct {
 	f func() error
 }

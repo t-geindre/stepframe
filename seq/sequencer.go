@@ -16,12 +16,13 @@ type Sequencer struct {
 
 	logger zerolog.Logger
 
-	in    *midi.Receiver
-	out   *midi.Sender
+	receiver *midi.Receiver
+	sender   *midi.Sender
+
 	clock clock.Clock
+	time  *TimeShifter
 
 	forwardInOut bool
-	now          int64
 
 	track track.Track
 }
@@ -39,9 +40,11 @@ func NewSequencer(
 		Expose: async.NewExpose(as),
 		logger: logger,
 
+		receiver: in,
+		sender:   out,
+
 		clock: clock,
-		in:    in,
-		out:   out,
+		time:  NewTimeShifter(),
 
 		forwardInOut: true,
 
@@ -74,28 +77,60 @@ func (s *Sequencer) run(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case cmd := <-s.async.Commands():
-			_ = cmd
-			s.logger.Warn().Msg("received command")
-		case ev := <-s.in.Events():
-			s.onInEvent(ev)
+			s.onCommand(cmd)
+		case ev := <-s.receiver.Events():
+			s.onMidiEvent(ev)
 		case tick := <-s.clock.Ticks():
 			s.onTick(tick)
 		}
 	}
 }
 
-func (s *Sequencer) onInEvent(ev midi.Event) {
+func (s *Sequencer) onMidiEvent(ev midi.Event) {
 	if s.forwardInOut && ev.Id == midi.EvMessage {
-		s.out.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: ev.Msg})
+		s.sender.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: ev.Msg})
 	}
 
-	s.track.AddEvent(s.now, ev.Msg)
+	if s.time.State() != TsPlaying {
+		return
+	}
+
+	s.track.AddEvent(s.time.Now(), ev.Msg)
+}
+
+func (s *Sequencer) onCommand(cmd Command) {
+	switch cmd.Id {
+	case CmdPlay:
+		if s.time.State() == TsStopped {
+			s.track.Reset()
+		}
+		s.time.Play()
+		s.async.TryDispatch(Event{Id: EvPlaying})
+	case CmdPause:
+		s.time.Pause()
+		s.async.TryDispatch(Event{Id: EvPaused})
+		s.sender.TryCommand(midi.Command{Id: midi.CmdPanic})
+	case CmdStop:
+		s.time.Stop(true)
+		s.async.TryDispatch(Event{Id: EvStopped})
+		s.sender.TryCommand(midi.Command{Id: midi.CmdPanic})
+	}
 }
 
 func (s *Sequencer) onTick(tick clock.Tick) {
-	s.now = tick.N
-	for _, m := range s.track.PollDue(s.now) {
-		s.out.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: m})
+	s.time.Tick(tick.N)
+
+	if s.time.State() != TsPlaying {
+		return
 	}
 
+	now := s.time.Now()
+
+	for _, m := range s.track.PollDue(now) {
+		s.sender.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: m})
+	}
+
+	if s.time.IsBeat(s.clock.GetTicksPerQuarter()) {
+		s.async.TryDispatch(Event{Id: EvBeat})
+	}
 }

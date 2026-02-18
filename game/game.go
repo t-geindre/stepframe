@@ -14,16 +14,23 @@ type Game struct {
 	drawer  []Drawer
 	layout  Layout
 	ctx     context.Context
+	logger  zerolog.Logger
 }
 
 func RunGame(logger zerolog.Logger, ctx context.Context, obj ...any) {
 	logger = logger.With().Str("component", "game").Logger()
 
-	g := &Game{ctx: ctx}
+	g := &Game{ctx: ctx, logger: logger}
 
 	for _, o := range obj {
 		if u, ok := o.(Updater); ok {
 			g.updater = append(g.updater, u)
+		}
+		if ue, ok := o.(UpdaterWithoutError); ok {
+			g.updater = append(g.updater, NewUpdateFunc(func() error {
+				ue.Update()
+				return nil
+			}))
 		}
 		if d, ok := o.(Drawer); ok {
 			g.drawer = append(g.drawer, d)
@@ -34,14 +41,18 @@ func RunGame(logger zerolog.Logger, ctx context.Context, obj ...any) {
 	}
 
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+
+	logger.Info().Msg("starting")
 	err := ebiten.RunGame(g)
+
 	if err != nil && !errors.Is(err, ebiten.Termination) {
 		logger.Err(err).Msg("failed to run game")
 	}
 }
 
 func (g *Game) Update() error {
-	if g.ctx.Err() != nil {
+	if g.ctx.Err() != nil || ebiten.IsWindowBeingClosed() {
+		g.logger.Info().Msg("exiting")
 		return ebiten.Termination
 	}
 

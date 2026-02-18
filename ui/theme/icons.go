@@ -16,15 +16,33 @@ var iconsImage []byte
 
 type Icons map[Icon]*ebiten.Image
 type Icon int
-type IconAccent int
 
 const (
 	IconPause Icon = iota
 	IconPlay
 	IconPlus
 	IconStop
+	IconLed
 
 	IconCellSize float64 = 64
+)
+
+type IconSize int
+type IconSizes map[IconSize]int
+
+const (
+	IconSizeSmall IconSize = iota
+	IconSizeMedium
+	IconSizeLarge
+)
+
+type IconColor int
+type IconColors map[IconColor]color.Color
+
+const (
+	IconColorLedOn IconColor = iota
+	IconColorLedOff
+	IconColorDefault
 )
 
 var iconsMap = map[Icon]struct{ x, y float64 }{
@@ -32,6 +50,7 @@ var iconsMap = map[Icon]struct{ x, y float64 }{
 	IconPlay:  {1, 0},
 	IconPlus:  {2, 0},
 	IconStop:  {3, 0},
+	IconLed:   {4, 0},
 }
 
 type IconsBuilder struct {

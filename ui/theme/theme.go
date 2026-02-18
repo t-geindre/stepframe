@@ -9,10 +9,14 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
+var Current *Theme
+
 type Theme struct {
 	*widget.Theme
 	PanelTheme    *PanelTheme
 	Icons         Icons
+	IconSizes     IconSizes
+	IconColors    IconColors
 	MainMenuTheme *MainMenuTheme
 	PlayTheme     *PlayTheme
 }

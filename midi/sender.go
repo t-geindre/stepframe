@@ -70,6 +70,9 @@ func (s *Sender) handleCommand(c Command) {
 		s.closePort()
 	case CmdMessage:
 		s.sendMessage(c.Msg)
+	case CmdPanic:
+		s.panic()
+
 	default:
 		s.logger.Err(ErrUnknownCommand).Msg("unknown command")
 	}
@@ -108,10 +111,7 @@ func (s *Sender) closePort() {
 	logger := s.logger.With().Int("port", s.port).Logger()
 
 	logger.Info().Msg("all notes off")
-	for i := uint8(0); i < 16; i++ {
-		s.sendMessage(midi.ControlChange(i, 123, 0))
-		s.sendMessage(midi.ControlChange(i, 120, 0))
-	}
+	s.panic()
 
 	err := s.close()
 	if err != nil {
@@ -154,4 +154,11 @@ func (s *Sender) sendMessage(m midi.Message) {
 	}
 
 	s.lastSend = time.Now()
+}
+
+func (s *Sender) panic() {
+	for i := uint8(0); i < 16; i++ {
+		s.sendMessage(midi.ControlChange(i, 123, 0))
+		s.sendMessage(midi.ControlChange(i, 120, 0))
+	}
 }

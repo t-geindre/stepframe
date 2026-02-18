@@ -8,6 +8,7 @@ const (
 	CmdOpenPort CommandId = iota
 	CmdClosePort
 	CmdMessage
+	CmdPanic
 )
 
 type Command struct {

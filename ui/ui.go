@@ -1,89 +1,65 @@
 package ui
 
 import (
-	"fmt"
 	"stepframe/clock"
 	"stepframe/midi"
 	"stepframe/seq"
-	"stepframe/track"
-	"stepframe/ui/layout"
+	"stepframe/ui/container"
 	"stepframe/ui/theme"
 
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/widget"
+	"github.com/rs/zerolog"
 )
 
 type Ui struct {
-	seq      *seq.Sequencer
-	grid     *Grid
-	main     *widget.Container
-	clock    clock.Clock
-	sender   *midi.Sender
-	receiver *midi.Receiver
+	// Core
+	clock     *clock.Clock
+	sequencer *seq.Sequencer
+	sender    *midi.Sender
+	receiver  *midi.Receiver
+	// Logging
+	logger zerolog.Logger
+	// UI
+	root widget.Containerer
+	menu *TopBar
 }
 
-func New(clk clock.Clock, sqr *seq.Sequencer, sd *midi.Sender, rc *midi.Receiver) *ebitenui.UI {
-	var ui *Ui
-	th := theme.NewDefaultTheme()
-	ui = &Ui{
-		seq:   sqr,
-		clock: clk,
-		grid:  NewGrid(th, sqr),
-		main: layout.NewMain(th, widget.ContainerOpts.WidgetOpts(
-			widget.WidgetOpts.OnUpdate(func(w widget.HasWidget) {
-				ui.Update()
-			}),
-		)),
+func New(
+	clock clock.Clock,
+	sequencer *seq.Sequencer,
+	sender *midi.Sender,
+	receiver *midi.Receiver,
+	logger zerolog.Logger,
+) *ebitenui.UI {
+	theme.SetDefaultTheme()
+
+	ui := &Ui{
+		root:      container.NewRoot(),
+		clock:     &clock,
+		sequencer: sequencer,
+		sender:    sender,
+		receiver:  receiver,
+		logger:    logger.With().Str("component", "ui").Logger(),
+		menu:      NewTopBar(sequencer),
 	}
 
-	// TODO TESTS REMOVE ME
-	// Display in/out ports
-	fmt.Println("MIDI OUT PORTS:")
-	for _, p := range midi.AllOutPorts() {
-		fmt.Printf(" - PORT[%d]: %s\n", p.Id, p.Name)
+	ui.root.GetWidget().OnUpdate = func(w widget.HasWidget) {
+		ui.drainSequencer()
 	}
-	fmt.Println("MIDI IN PORTS:")
-	for _, p := range midi.AllInPorts() {
-		fmt.Printf(" _ PORT[%d]: %s\n", p.Id, p.Name)
-	}
-	// open ports
-	sd.Commands() <- midi.Command{Id: midi.CmdOpenPort, Port: 1} // out
-	rc.TryCommand(midi.Command{Id: midi.CmdOpenPort, Port: 2})   // in
-	// Add some tracks
-	id := seq.TrackId(0)
-	for _, track := range []*track.track{
-		getBillieJeanBassTrack(),
-		getBillieJeanLeadTrack(),
-		getBillieJeanLeadTrackWithRatchet(clk),
-		getBillieJeanLeadTrackWithRatchetDouble(clk),
-	} {
-		track.SetId(id)
-		id++
 
-		sqr.Commands() <- seq.Command{
-			Id:    seq.CmdAdd,
-			Track: track,
-		}
-	}
-	// TODO END ---
-
-	// default view
-	ui.main.AddChild(ui.grid)
+	ui.root.AddChild(ui.menu)
 
 	return &ebitenui.UI{
-		Container:    ui.main,
-		PrimaryTheme: th.Theme,
+		Container:    ui.root,
+		PrimaryTheme: theme.Current.Theme,
 	}
-}
-
-func (u *Ui) Update() {
-	u.drainSequencer()
 }
 
 func (u *Ui) drainSequencer() {
 	for i := 0; i < 1024; i++ { // prevent starvation
 		select {
-		case e := <-u.seq.Events():
+		case e := <-u.sequencer.Events():
 			u.handleEvent(e)
 		default:
 			return
@@ -92,5 +68,5 @@ func (u *Ui) drainSequencer() {
 }
 
 func (u *Ui) handleEvent(e seq.Event) {
-	u.grid.HandleEvent(e)
+	u.menu.HandleEvent(e)
 }

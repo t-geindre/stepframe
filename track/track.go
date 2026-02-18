@@ -6,12 +6,18 @@ import (
 	"gitlab.com/gomidi/midi/v2"
 )
 
+// Track works in sequencer-local ticks.
 type Track interface {
-	Reset(globalTick0 int64)
-	LocalTick(globalTick int64) int64
-	AddEvent(atTick int64, msg midi.Message)
-	PollDue(globalTick int64) []midi.Message
-	GetBaseTick() int64
+	Reset()
+	// SetBaseLocalTick sets the base local tick of the track (usually 0).
+	SetBaseLocalTick(baseLocal int64)
+	// LocalTick returns the local tick in [0..lengthTick) for a given nowLocal.
+	LocalTick(nowLocal int64) int64
+	// AddEvent receives a tick expressed in sequencer-local ticks.
+	AddEvent(atLocalTick int64, msg midi.Message)
+	// PollDue receives nowLocal (sequencer-local) and returns messages to fire now.
+	PollDue(nowLocal int64) []midi.Message
+	GetBaseLocalTick() int64
 }
 
 type event struct {
@@ -21,7 +27,7 @@ type event struct {
 
 type track struct {
 	lengthTick int64
-	baseTick   int64 // global tick at which local tick == 0
+	baseTick   int64 // base local tick (sequencer-local) where track local tick == 0
 
 	events []event // sorted by AtTick
 	cursor int     // index of first event NOT YET passed in current cycle
@@ -39,20 +45,20 @@ func NewTrack(lengthTick int64) Track {
 	}
 }
 
-func (t *track) GetBaseTick() int64 {
+func (t *track) GetBaseLocalTick() int64 {
 	return t.baseTick
 }
 
-func (t *track) Reset(globalTick0 int64) {
-	t.baseTick = globalTick0
+func (t *track) SetBaseLocalTick(baseLocal int64) {
+	t.baseTick = baseLocal
+}
+
+func (t *track) Reset() {
 	t.cursor = 0
 }
 
-func (t *track) LocalTick(globalTick int64) int64 {
-	local := globalTick - t.baseTick
-	if t.lengthTick <= 0 {
-		return 0
-	}
+func (t *track) LocalTick(nowLocal int64) int64 {
+	local := nowLocal - t.baseTick
 	local %= t.lengthTick
 	if local < 0 {
 		local += t.lengthTick
@@ -60,20 +66,11 @@ func (t *track) LocalTick(globalTick int64) int64 {
 	return local
 }
 
-func (t *track) AddEvent(atTick int64, msg midi.Message) {
-	if msg == nil {
-		return
-	}
-
-	// wrap into loop
-	atTick %= t.lengthTick
-	if atTick < 0 {
-		atTick += t.lengthTick
-	}
+func (t *track) AddEvent(atLocalTick int64, msg midi.Message) {
+	atTick := t.LocalTick(atLocalTick)
 
 	ev := event{AtTick: atTick, Msg: msg}
 
-	// insertion point: after all events with AtTick <= ev.AtTick (stable)
 	i := sort.Search(len(t.events), func(i int) bool {
 		return t.events[i].AtTick > ev.AtTick
 	})
@@ -87,12 +84,12 @@ func (t *track) AddEvent(atTick int64, msg midi.Message) {
 	}
 }
 
-func (t *track) PollDue(globalTick int64) []midi.Message {
+func (t *track) PollDue(nowLocal int64) []midi.Message {
 	if len(t.events) == 0 {
 		return nil
 	}
 
-	local := t.LocalTick(globalTick)
+	local := t.LocalTick(nowLocal)
 
 	if local == 0 {
 		t.cursor = 0

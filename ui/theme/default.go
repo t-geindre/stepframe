@@ -11,7 +11,7 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-func NewDefaultTheme() *Theme {
+func SetDefaultTheme() {
 	const borderSize = 1
 
 	// COLORS
@@ -69,14 +69,14 @@ func NewDefaultTheme() *Theme {
 	iconsBuilder := NewIconsBuilder()
 
 	// FONTS
-	face := getFontFace(14)
+	face := getFontFace(18)
 	menuFace := getFontFace(18)
 
-	return &Theme{
+	theme := &Theme{
 		PanelTheme: &PanelTheme{
 			ForegroundImage: image.NewBorderedNineSliceColor(cSurfacePanelFg, cSurfacePanelBg, 1),
 			BackgroundImage: image.NewNineSliceColor(cSurfacePanelBg),
-			Padding:         &widget.Insets{Left: 10, Right: 10, Top: 10, Bottom: 10},
+			Padding:         &widget.Insets{Left: 5, Right: 5, Top: 5, Bottom: 5},
 			Spacing:         10,
 		},
 		Theme: &widget.Theme{
@@ -90,7 +90,7 @@ func NewDefaultTheme() *Theme {
 					Hover:   image.NewBorderedNineSliceColor(cBtnHoverFill, cBtnIdleFill, borderSize),
 					Pressed: image.NewBorderedNineSliceColor(cBtnPressedFill, cBtnHoverFill, borderSize),
 				},
-				TextPadding: &widget.Insets{Left: 15, Right: 15, Top: 5, Bottom: 5},
+				TextPadding: &widget.Insets{Left: 10, Right: 10, Top: 5, Bottom: 5},
 				TextPosition: &widget.TextPositioning{
 					VTextPosition: widget.TextPositionCenter,
 					HTextPosition: widget.TextPositionCenter,
@@ -108,6 +108,7 @@ func NewDefaultTheme() *Theme {
 				Color: cText,
 				Position: &widget.TextPositioning{
 					VTextPosition: widget.TextPositionCenter,
+					HTextPosition: widget.TextPositionCenter,
 				},
 			},
 			TabbookTheme: &widget.TabBookParams{
@@ -218,6 +219,16 @@ func NewDefaultTheme() *Theme {
 			},
 		},
 		Icons: iconsBuilder.GetIcons(1, nil),
+		IconSizes: IconSizes{
+			IconSizeSmall:  24,
+			IconSizeMedium: 32,
+			IconSizeLarge:  48,
+		},
+		IconColors: IconColors{
+			IconColorLedOn:   colornames.Lime,
+			IconColorLedOff:  colornames.Red,
+			IconColorDefault: colornames.White,
+		},
 		MainMenuTheme: &MainMenuTheme{
 			ButtonImage: &widget.ButtonImage{
 				Idle:  image.NewNineSliceColor(cBtnIdleFill),
@@ -238,4 +249,6 @@ func NewDefaultTheme() *Theme {
 			PulseDuration: 150 * time.Millisecond,
 		},
 	}
+
+	Current = theme
 }
