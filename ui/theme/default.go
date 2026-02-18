@@ -220,14 +220,15 @@ func SetDefaultTheme() {
 		},
 		Icons: iconsBuilder.GetIcons(1, nil),
 		IconSizes: IconSizes{
-			IconSizeSmall:  24,
-			IconSizeMedium: 32,
-			IconSizeLarge:  48,
+			IconSizeSmall:  16,
+			IconSizeMedium: 24,
+			IconSizeLarge:  32,
 		},
 		IconColors: IconColors{
 			IconColorLedOn:   colornames.Lime,
 			IconColorLedOff:  colornames.Red,
 			IconColorDefault: colornames.White,
+			IconColorArmed:   colornames.Orange,
 		},
 		MainMenuTheme: &MainMenuTheme{
 			ButtonImage: &widget.ButtonImage{

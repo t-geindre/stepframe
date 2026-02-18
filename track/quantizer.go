@@ -16,7 +16,7 @@ type Quantizer struct {
 	Mode     QuantizeMode
 }
 
-func NewQuantizer(inner Track, gridTick int64, mode QuantizeMode) Track {
+func NewQuantizer(inner Track, gridTick int64, mode QuantizeMode) *Quantizer {
 	if inner == nil {
 		panic("inner is nil")
 	}

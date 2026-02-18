@@ -18,9 +18,13 @@ type Icons map[Icon]*ebiten.Image
 type Icon int
 
 const (
-	IconPause Icon = iota
+	IconClear Icon = iota
+	IconDelete
+	IconGear
+	IconPause
 	IconPlay
 	IconPlus
+	IconRecord
 	IconStop
 	IconLed
 
@@ -42,15 +46,20 @@ type IconColors map[IconColor]color.Color
 const (
 	IconColorLedOn IconColor = iota
 	IconColorLedOff
+	IconColorArmed
 	IconColorDefault
 )
 
 var iconsMap = map[Icon]struct{ x, y float64 }{
-	IconPause: {0, 0},
-	IconPlay:  {1, 0},
-	IconPlus:  {2, 0},
-	IconStop:  {3, 0},
-	IconLed:   {4, 0},
+	IconClear:  {0, 0},
+	IconDelete: {1, 0},
+	IconGear:   {2, 0},
+	IconPause:  {3, 0},
+	IconPlay:   {4, 0},
+	IconPlus:   {5, 0},
+	IconRecord: {6, 0},
+	IconStop:   {7, 0},
+	IconLed:    {0, 1},
 }
 
 type IconsBuilder struct {

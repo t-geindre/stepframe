@@ -21,8 +21,9 @@ type Ui struct {
 	// Logging
 	logger zerolog.Logger
 	// UI
-	root widget.Containerer
-	menu *TopBar
+	root   widget.Containerer
+	menu   *TopBar
+	tracks *Tracks
 }
 
 func New(
@@ -42,6 +43,7 @@ func New(
 		receiver:  receiver,
 		logger:    logger.With().Str("component", "ui").Logger(),
 		menu:      NewTopBar(sequencer),
+		tracks:    NewTracks(logger, sequencer),
 	}
 
 	ui.root.GetWidget().OnUpdate = func(w widget.HasWidget) {
@@ -49,6 +51,7 @@ func New(
 	}
 
 	ui.root.AddChild(ui.menu)
+	ui.root.AddChild(ui.tracks)
 
 	return &ebitenui.UI{
 		Container:    ui.root,
@@ -69,4 +72,5 @@ func (u *Ui) drainSequencer() {
 
 func (u *Ui) handleEvent(e seq.Event) {
 	u.menu.HandleEvent(e)
+	u.tracks.HandleEvent(e)
 }

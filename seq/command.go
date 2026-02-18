@@ -6,10 +6,15 @@ const (
 	CmdPlay CommandId = iota
 	CmdStop
 	CmdPause
+	CmdRecord
+	CmdStopRecord
+	CmdNewTrack
+	CmdRemoveTrack
 )
 
 type Command struct {
-	Id CommandId
+	Id      CommandId
+	TrackId *int
 }
 
 type EventId int
@@ -19,8 +24,17 @@ const (
 	EvPlaying
 	EvStopped
 	EvPaused
+	EvRecording
+	EvArmedPlaying
+	EvArmedStopped
+	EvArmedPaused
+	EvArmedRecording
+	EvStopRecording
+	EvTrackAdded
+	EvTrackRemoved
 )
 
 type Event struct {
-	Id EventId
+	Id      EventId
+	TrackId *int
 }

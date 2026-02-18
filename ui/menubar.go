@@ -20,12 +20,12 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 	}
 
 	// BPM LED
-	t.beatLed = widgets.NewIcon(theme.IconLed, theme.IconSizeSmall)
+	t.beatLed = widgets.NewIcon(theme.IconLed, theme.IconSizeMedium)
 	t.beatLed.SetColor(theme.IconColorLedOff)
 	t.beatLed.SetPulseColor(theme.IconColorLedOn)
 
 	// Play button
-	t.playIcon = widgets.NewIcon(theme.IconPlay, theme.IconSizeSmall)
+	t.playIcon = widgets.NewIcon(theme.IconPlay, theme.IconSizeMedium)
 	playButton := widgets.NewButton(func() {
 		if t.playing {
 			sequencer.TryCommand(seq.Command{Id: seq.CmdPause})
@@ -38,7 +38,7 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 	// Stop button
 	stopButton := widgets.NewIconButton(func() {
 		sequencer.TryCommand(seq.Command{Id: seq.CmdStop})
-	}, theme.IconStop, theme.IconSizeSmall)
+	}, theme.IconStop, theme.IconSizeMedium)
 
 	// Place widgets
 	t.Bar.Left.AddChild(t.beatLed)
@@ -52,6 +52,9 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 }
 
 func (t *TopBar) HandleEvent(event seq.Event) {
+	if event.TrackId != nil {
+		return // Track command, ignore
+	}
 	switch event.Id {
 	case seq.EvBeat:
 		t.beatLed.Pulse()

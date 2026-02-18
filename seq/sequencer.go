@@ -5,7 +5,6 @@ import (
 	"stepframe/async"
 	"stepframe/clock"
 	"stepframe/midi"
-	"stepframe/track"
 
 	"github.com/rs/zerolog"
 )
@@ -13,46 +12,35 @@ import (
 type Sequencer struct {
 	async *async.Async[Command, Event]
 	*async.Expose[Command, Event]
-
 	logger zerolog.Logger
 
-	receiver *midi.Receiver
-	sender   *midi.Sender
-
-	clock clock.Clock
-	time  *TimeShifter
-
+	receiver     *midi.Receiver
+	sender       *midi.Sender
+	clock        clock.Clock
+	time         *TimeShifter
 	forwardInOut bool
-
-	track track.Track
+	tracks       map[int]*Track
+	trackIds     int
 }
 
 func NewSequencer(
 	logger zerolog.Logger,
 	clock clock.Clock,
-	in *midi.Receiver, out *midi.Sender,
+	receiver *midi.Receiver, sender *midi.Sender,
 ) *Sequencer {
 	logger = logger.With().Str("component", "sequencer").Logger()
 	as := async.NewAsync[Command, Event](logger, 16)
 
 	return &Sequencer{
-		async:  as,
-		Expose: async.NewExpose(as),
-		logger: logger,
-
-		receiver: in,
-		sender:   out,
-
-		clock: clock,
-		time:  NewTimeShifter(),
-
+		async:        as,
+		Expose:       async.NewExpose(as),
+		logger:       logger,
+		receiver:     receiver,
+		sender:       sender,
+		clock:        clock,
+		time:         NewTimeShifter(),
 		forwardInOut: true,
-
-		track: track.NewQuantizer(
-			track.NewTrack(384),
-			clock.GetTicksPerQuarter()/4,
-			track.QuantizeNearest,
-		),
+		tracks:       make(map[int]*Track),
 	}
 }
 
@@ -60,7 +48,6 @@ func (s *Sequencer) Run(ctx context.Context) {
 	if ok := s.async.CanRun(); !ok {
 		panic(ErrAlreadyRunning) // intentional panic
 	}
-
 	go s.run(ctx)
 }
 
@@ -95,25 +82,8 @@ func (s *Sequencer) onMidiEvent(ev midi.Event) {
 		return
 	}
 
-	s.track.AddEvent(s.time.Now(), ev.Msg)
-}
-
-func (s *Sequencer) onCommand(cmd Command) {
-	switch cmd.Id {
-	case CmdPlay:
-		if s.time.State() == TsStopped {
-			s.track.Reset()
-		}
-		s.time.Play()
-		s.async.TryDispatch(Event{Id: EvPlaying})
-	case CmdPause:
-		s.time.Pause()
-		s.async.TryDispatch(Event{Id: EvPaused})
-		s.sender.TryCommand(midi.Command{Id: midi.CmdPanic})
-	case CmdStop:
-		s.time.Stop(true)
-		s.async.TryDispatch(Event{Id: EvStopped})
-		s.sender.TryCommand(midi.Command{Id: midi.CmdPanic})
+	for _, t := range s.tracks {
+		t.AddEvent(s.time.Now(), ev.Msg)
 	}
 }
 
@@ -126,11 +96,90 @@ func (s *Sequencer) onTick(tick clock.Tick) {
 
 	now := s.time.Now()
 
-	for _, m := range s.track.PollDue(now) {
-		s.sender.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: m})
+	for _, t := range s.tracks {
+		for _, m := range t.PollDue(now) {
+			s.sender.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: m})
+		}
 	}
 
 	if s.time.IsBeat(s.clock.GetTicksPerQuarter()) {
 		s.async.TryDispatch(Event{Id: EvBeat})
 	}
+}
+
+func (s *Sequencer) onCommand(cmd Command) {
+	if cmd.TrackId != nil {
+		s.onTrackCommand(cmd)
+		return
+	}
+
+	switch cmd.Id {
+	case CmdPlay:
+		s.play()
+	case CmdPause:
+		s.pause()
+	case CmdStop:
+		s.stop()
+	case CmdNewTrack:
+		s.newTrack()
+	default:
+		s.logger.Warn().Int("cmdId", int(cmd.Id)).Msg("unknown command")
+		return
+	}
+}
+
+func (s *Sequencer) onTrackCommand(cmd Command) {
+	id := *cmd.TrackId
+
+	if cmd.Id == CmdRemoveTrack {
+		s.removeTrack(id)
+		return
+	}
+
+	s.tracks[id].HandleCommand(s.time.Now(), cmd)
+	return
+}
+
+func (s *Sequencer) play() {
+	if s.time.State() == TsStopped {
+		for _, t := range s.tracks {
+			t.Reset()
+		}
+	}
+	s.time.Play()
+	s.async.TryDispatch(Event{Id: EvPlaying})
+	s.logger.Info().Msg("play state: playing")
+}
+
+func (s *Sequencer) pause() {
+	s.time.Pause()
+	s.async.TryDispatch(Event{Id: EvPaused})
+	s.sender.TryCommand(midi.Command{Id: midi.CmdPanic})
+	s.logger.Info().Msg("play state: paused")
+}
+
+func (s *Sequencer) stop() {
+	s.time.Stop(true)
+	s.async.TryDispatch(Event{Id: EvStopped})
+	s.sender.TryCommand(midi.Command{Id: midi.CmdPanic})
+	s.logger.Info().Msg("play state: stopped")
+}
+
+func (s *Sequencer) newTrack() {
+	id := s.trackIds
+	s.trackIds++
+
+	t := NewTrack(s.logger, id, s.clock, s.async.TryDispatch)
+	s.tracks[id] = t
+	s.async.TryDispatch(Event{Id: EvTrackAdded, TrackId: &id})
+}
+
+func (s *Sequencer) removeTrack(id int) {
+	if _, ok := s.tracks[id]; !ok {
+		s.logger.Warn().Int("trackId", id).Msg("invalid track id in remove command")
+		return
+	}
+
+	delete(s.tracks, id)
+	s.async.TryDispatch(Event{Id: EvTrackRemoved, TrackId: &id})
 }
