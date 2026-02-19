@@ -15,7 +15,7 @@ type Button struct {
 
 func NewButton(click func()) *Button {
 	return &Button{
-		Row:   container.NewRow(widget.DirectionHorizontal).Themed(),
+		Row:   container.NewHorizontalRow().WithPadding(),
 		click: click,
 	}
 }

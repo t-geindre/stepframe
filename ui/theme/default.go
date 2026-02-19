@@ -74,9 +74,9 @@ func SetDefaultTheme() {
 
 	theme := &Theme{
 		PanelTheme: &PanelTheme{
-			ForegroundImage: image.NewBorderedNineSliceColor(cSurfacePanelFg, cSurfacePanelBg, 1),
+			ForegroundImage: NewNineSliceRounded(cSurfacePanelFg, 5),
 			BackgroundImage: image.NewNineSliceColor(cSurfacePanelBg),
-			Padding:         &widget.Insets{Left: 5, Right: 5, Top: 5, Bottom: 5},
+			Padding:         &widget.Insets{Left: 10, Right: 10, Top: 5, Bottom: 5},
 			Spacing:         10,
 		},
 		Theme: &widget.Theme{
@@ -225,10 +225,11 @@ func SetDefaultTheme() {
 			IconSizeLarge:  32,
 		},
 		IconColors: IconColors{
-			IconColorLedOn:   colornames.Lime,
-			IconColorLedOff:  colornames.Red,
+			IconColorIdle:    colornames.Red,
+			IconColorOn:      colornames.Lime,
+			IconColorOff:     colornames.Black,
+			IconColorArmed:   colornames.Yellow,
 			IconColorDefault: colornames.White,
-			IconColorArmed:   colornames.Orange,
 		},
 		MainMenuTheme: &MainMenuTheme{
 			ButtonImage: &widget.ButtonImage{

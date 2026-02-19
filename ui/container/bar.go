@@ -21,11 +21,10 @@ func NewBar() *Bar {
 				widget.GridLayoutOpts.Padding(theme.Current.PanelTheme.Padding),
 				widget.GridLayoutOpts.Spacing(theme.Current.PanelTheme.Spacing, theme.Current.PanelTheme.Spacing),
 			)),
-			widget.ContainerOpts.BackgroundImage(theme.Current.PanelTheme.BackgroundImage),
 		),
-		Left:   NewRow(widget.DirectionHorizontal).Themed(),
-		Center: NewRow(widget.DirectionHorizontal).Themed(),
-		Right:  NewRow(widget.DirectionHorizontal).Themed(),
+		Left:   NewHorizontalRow().WithForeground().WithPadding().WitSpacing(),
+		Center: NewHorizontalRow().WithForeground().WithPadding().WitSpacing(),
+		Right:  NewHorizontalRow().WithForeground().WithPadding().WitSpacing(),
 	}
 
 	m.AddChild(m.Left)

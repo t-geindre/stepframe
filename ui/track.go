@@ -6,8 +6,6 @@ import (
 	"stepframe/ui/container"
 	"stepframe/ui/theme"
 	"stepframe/ui/widgets"
-
-	"github.com/ebitenui/ebitenui/widget"
 )
 
 type Mode uint8
@@ -81,7 +79,7 @@ func NewTrack(id int, sequencer *seq.Sequencer) *Track {
 	optionsIcon := widgets.NewIcon(theme.IconGear, theme.IconSizeMedium)
 	optionsButton.AddChild(optionsIcon)
 
-	t.Row = container.NewRow(widget.DirectionHorizontal)
+	t.Row = container.NewHorizontalRow().WithPadding().WithForeground()
 	t.Row.AddChild(widgets.NewText(fmt.Sprintf(" %02d", id+1)))
 	t.Row.AddChild(playButton, recordButton)
 	t.Row.AddChild(clearButton, deleteButton, optionsButton)
@@ -91,6 +89,16 @@ func NewTrack(id int, sequencer *seq.Sequencer) *Track {
 }
 
 func (t *Track) HandleEvent(e seq.Event) {
+	if e.Id == seq.EvBeat {
+		t.playLed.Pulse()
+		t.recordLed.Pulse()
+		return
+	}
+
+	if e.TrackId == nil || *e.TrackId != t.Id {
+		return
+	}
+
 	switch e.Id {
 	case seq.EvPlaying:
 		t.mode = ModePlaying
@@ -122,25 +130,29 @@ func (t *Track) applyVisualState() {
 		t.playIcon.SetIcon(theme.IconPlay)
 	}
 
+	t.playLed.SetPulseColor(theme.IconColorDefault)
 	switch {
 	case t.armed == ArmStop:
 		t.playLed.SetColor(theme.IconColorArmed)
 	case playing:
-		t.playLed.SetColor(theme.IconColorLedOn)
+		t.playLed.SetColor(theme.IconColorOn)
 	case t.armed == ArmPlay || t.armed == ArmRecord:
 		t.playLed.SetColor(theme.IconColorArmed)
 	default:
-		t.playLed.SetColor(theme.IconColorLedOff)
+		t.playLed.SetColor(theme.IconColorIdle)
+		t.playLed.SetPulseColor(theme.IconColorNone)
 	}
 
+	t.recordLed.SetPulseColor(theme.IconColorDefault)
 	switch {
 	case t.armed == ArmRecord:
 		t.recordLed.SetColor(theme.IconColorArmed)
 	case t.armed == ArmStop && recording:
 		t.recordLed.SetColor(theme.IconColorArmed)
 	case recording:
-		t.recordLed.SetColor(theme.IconColorLedOn)
+		t.recordLed.SetColor(theme.IconColorOn)
 	default:
-		t.recordLed.SetColor(theme.IconColorLedOff)
+		t.recordLed.SetColor(theme.IconColorIdle)
+		t.recordLed.SetPulseColor(theme.IconColorNone)
 	}
 }

@@ -44,10 +44,12 @@ type IconColor int
 type IconColors map[IconColor]color.Color
 
 const (
-	IconColorLedOn IconColor = iota
-	IconColorLedOff
+	IconColorOn IconColor = iota
+	IconColorOff
+	IconColorIdle
 	IconColorArmed
 	IconColorDefault
+	IconColorNone
 )
 
 var iconsMap = map[Icon]struct{ x, y float64 }{

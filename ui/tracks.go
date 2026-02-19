@@ -3,8 +3,6 @@ package ui
 import (
 	"stepframe/seq"
 	"stepframe/ui/container"
-	"stepframe/ui/theme"
-	"stepframe/ui/widgets"
 
 	"github.com/ebitenui/ebitenui/widget"
 	"github.com/rs/zerolog"
@@ -12,30 +10,26 @@ import (
 
 type Tracks struct {
 	*container.Row
-	addBtn    *widgets.Button
 	tacks     map[int]*Track
 	sequencer *seq.Sequencer
 	logger    zerolog.Logger
 }
 
 func NewTracks(logger zerolog.Logger, sequencer *seq.Sequencer) *Tracks {
-	t := &Tracks{
+	return &Tracks{
+		Row: container.NewVerticalRow().AlignContent(widget.RowLayoutPositionStart).
+			WithPadding().StretchContent(),
 		tacks:     make(map[int]*Track),
 		sequencer: sequencer,
 		logger:    logger.With().Str("component", "ui_tracks").Logger(),
 	}
-	t.Row = container.NewRow(widget.DirectionVertical)
-
-	t.addBtn = widgets.NewButton(func() {
-		sequencer.TryCommand(seq.Command{Id: seq.CmdNewTrack})
-	})
-	t.addBtn.AddChild(widgets.NewIcon(theme.IconPlus, theme.IconSizeMedium))
-	t.Row.AddChild(t.addBtn)
-
-	return t
 }
 
 func (t *Tracks) HandleEvent(e seq.Event) {
+	for _, track := range t.tacks {
+		track.HandleEvent(e)
+	}
+
 	if e.TrackId == nil {
 		return // No error, ignore command
 	}
@@ -45,15 +39,6 @@ func (t *Tracks) HandleEvent(e seq.Event) {
 		t.addTrack(*e.TrackId)
 	case seq.EvTrackRemoved:
 		t.removeTrack(*e.TrackId)
-	default:
-		if track, ok := t.tacks[*e.TrackId]; ok {
-			track.HandleEvent(e)
-			return
-		}
-		t.logger.Warn().
-			Int("track_id", *e.TrackId).
-			Int("event_id", int(e.Id)).
-			Msg("received event for non-existent track")
 	}
 }
 
