@@ -18,6 +18,7 @@ type Track interface {
 	// PollDue receives nowLocal (sequencer-local) and returns messages to fire now.
 	PollDue(nowLocal int64) []midi.Message
 	GetBaseLocalTick() int64
+	GetLengthTick() int64
 }
 
 type event struct {
@@ -115,4 +116,8 @@ func (t *track) PollDue(nowLocal int64) []midi.Message {
 		out = append(out, t.events[i].Msg)
 	}
 	return out
+}
+
+func (t *track) GetLengthTick() int64 {
+	return t.lengthTick
 }

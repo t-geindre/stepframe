@@ -64,3 +64,4 @@ func (q *Quantizer) SetBaseLocalTick(baseLocal int64)      { q.inner.SetBaseLoca
 func (q *Quantizer) GetBaseLocalTick() int64               { return q.inner.GetBaseLocalTick() }
 func (q *Quantizer) LocalTick(nowLocal int64) int64        { return q.inner.LocalTick(nowLocal) }
 func (q *Quantizer) PollDue(nowLocal int64) []midi.Message { return q.inner.PollDue(nowLocal) }
+func (q *Quantizer) GetLengthTick() int64                  { return q.inner.GetLengthTick() }

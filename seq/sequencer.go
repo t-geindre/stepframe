@@ -79,7 +79,11 @@ func (s *Sequencer) onMidiEvent(ev midi.Event) {
 	}
 
 	if s.time.State() != TsPlaying {
-		return
+		if s.shouldStartPlaying(true) {
+			s.play()
+		} else {
+			return
+		}
 	}
 
 	for _, t := range s.tracks {
@@ -91,7 +95,11 @@ func (s *Sequencer) onTick(tick clock.Tick) {
 	s.time.Tick(tick.N)
 
 	if s.time.State() != TsPlaying {
-		return
+		if s.shouldStartPlaying(false) {
+			s.play()
+		} else {
+			return
+		}
 	}
 
 	now := s.time.Now()
@@ -182,4 +190,16 @@ func (s *Sequencer) removeTrack(id int) {
 
 	delete(s.tracks, id)
 	s.async.TryDispatch(Event{Id: EvTrackRemoved, TrackId: &id})
+}
+
+func (s *Sequencer) shouldStartPlaying(hasReceivedEvent bool) bool {
+	for _, t := range s.tracks {
+		if hasReceivedEvent && t.scheduledState == TrackStateRecording {
+			return true
+		}
+		if t.scheduledState == TrackStatePlaying {
+			return true
+		}
+	}
+	return false
 }

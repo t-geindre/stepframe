@@ -19,14 +19,15 @@ const (
 
 type Track struct {
 	track.Track
-	clock          clock.Clock
-	quantizer      *track.Quantizer
-	state          TrackState
-	scheduledState TrackState
-	scheduledAt    int64
-	dispatch       func(Event) bool
-	logger         zerolog.Logger
-	id             int
+	clock           clock.Clock
+	quantizer       *track.Quantizer
+	state           TrackState
+	scheduledState  TrackState
+	scheduledAt     int64
+	dispatch        func(Event) bool
+	logger          zerolog.Logger
+	id              int
+	recordRealStart int64
 }
 
 func NewTrack(logger zerolog.Logger, id int, clock clock.Clock, dispatch func(Event) bool) *Track {
@@ -55,11 +56,23 @@ func (t *Track) PollDue(nowLocal int64) []midi.Message {
 		return nil
 	}
 
+	// Auto stop recording
+	if t.state == TrackStateRecording && t.recordRealStart >= 0 {
+		if nowLocal-t.recordRealStart > t.Track.GetLengthTick() {
+			t.setState(TrackStatePlaying)
+		}
+	}
+
 	return t.Track.PollDue(nowLocal)
 }
 
 func (t *Track) AddEvent(atLocalTick int64, msg midi.Message) {
+	t.setDueState(atLocalTick)
+
 	if t.state == TrackStateRecording {
+		if t.recordRealStart < 0 {
+			t.recordRealStart = atLocalTick
+		}
 		t.Track.AddEvent(atLocalTick, msg)
 	}
 }
@@ -113,6 +126,7 @@ func (t *Track) setState(state TrackState) {
 		t.Track.Reset()
 		t.dispatch(Event{Id: EvStopped, TrackId: &t.id})
 	case TrackStateRecording:
+		t.recordRealStart = -1
 		t.Track.Reset()
 		t.dispatch(Event{Id: EvRecording, TrackId: &t.id})
 	default:
