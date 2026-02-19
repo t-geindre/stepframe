@@ -42,7 +42,7 @@ func NewTrack(id int, sequencer *seq.Sequencer) *Track {
 	t := &Track{Id: id, mode: ModeStopped, armed: ArmNone}
 
 	playButton := widgets.NewButton(func() {
-		if t.mode != ModeStopped || t.armed == ArmPlay {
+		if t.mode != ModeStopped || t.armed == ArmPlay || t.armed == ArmRecord {
 			sequencer.TryCommand(seq.Command{Id: seq.CmdStop, TrackId: &id})
 		} else {
 			sequencer.TryCommand(seq.Command{Id: seq.CmdPlay, TrackId: &id})
