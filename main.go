@@ -32,7 +32,8 @@ func main() {
 	defer clk.Wait()
 
 	// MIDI
-	defer midi.CloseDriver(logger)
+	midi.Open(logger)
+	defer midi.Close(logger)
 
 	sender := midi.NewSender(logger, 800*time.Microsecond)
 	sender.Run(ctx)

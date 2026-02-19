@@ -27,7 +27,7 @@ type Internal struct {
 
 func NewInternalClock(logger zerolog.Logger, ppqn int64, bpm float64, buffer int, dropTicks bool) *Internal {
 	c := &Internal{
-		logger:    logger.With().Str("component", "internal clock").Logger(),
+		logger:    logger.With().Str("component", "internal_clock").Logger(),
 		ppqn:      ppqn,
 		ticks:     make(chan Tick, buffer),
 		done:      make(chan struct{}),

@@ -18,7 +18,7 @@ type Receiver struct {
 }
 
 func NewReceiver(logger zerolog.Logger) *Receiver {
-	logger = logger.With().Str("component", "midi receiver").Logger()
+	logger = logger.With().Str("component", "midi_receiver").Logger()
 	as := async.NewAsync[Command, Event](logger, 16)
 
 	return &Receiver{

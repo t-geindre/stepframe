@@ -22,7 +22,7 @@ type Sender struct {
 }
 
 func NewSender(logger zerolog.Logger, stagger time.Duration) *Sender {
-	logger = logger.With().Str("component", "midi sender").Logger()
+	logger = logger.With().Str("component", "midi_sender").Logger()
 	as := async.NewAsync[Command, Event](logger, 16)
 
 	return &Sender{
