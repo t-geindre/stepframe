@@ -170,3 +170,7 @@ func (t *Track) setDueState(nowLocal int64) {
 		t.setState(t.scheduledState)
 	}
 }
+
+func (t *Track) flush() []midi.Message {
+	return t.noteTracker.Flush()
+}

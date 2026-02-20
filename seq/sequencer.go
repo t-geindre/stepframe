@@ -195,6 +195,10 @@ func (s *Sequencer) removeTrack(id int) {
 		return
 	}
 
+	for _, msg := range s.tracks[id].flush() {
+		s.sender.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: msg})
+	}
+
 	delete(s.tracks, id)
 	s.async.TryDispatch(Event{Id: EvTrackRemoved, TrackId: &id})
 }
