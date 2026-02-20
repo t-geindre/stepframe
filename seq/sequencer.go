@@ -22,7 +22,8 @@ type Sequencer struct {
 	tracks       map[int]*Track
 	trackIds     int
 
-	beatPerBar int
+	beatPerBar    int
+	playRequested bool
 }
 
 func NewSequencer(
@@ -81,12 +82,8 @@ func (s *Sequencer) onMidiEvent(ev midi.Event) {
 		s.sender.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: ev.Msg})
 	}
 
-	if s.time.State() != TsPlaying {
-		if s.shouldStartPlaying(true) {
-			s.play()
-		} else {
-			return
-		}
+	if !s.playIfRequired(true) {
+		return
 	}
 
 	for _, t := range s.tracks {
@@ -97,12 +94,8 @@ func (s *Sequencer) onMidiEvent(ev midi.Event) {
 func (s *Sequencer) onTick(tick clock.Tick) {
 	s.time.Tick(tick.N)
 
-	if s.time.State() != TsPlaying {
-		if s.shouldStartPlaying(false) {
-			s.play()
-		} else {
-			return
-		}
+	if !s.playIfRequired(false) {
+		return
 	}
 
 	now := s.time.Now()
@@ -126,7 +119,7 @@ func (s *Sequencer) onCommand(cmd Command) {
 
 	switch cmd.Id {
 	case CmdPlay:
-		s.play()
+		s.requestPlay()
 	case CmdPause:
 		s.pause()
 	case CmdStop:
@@ -153,17 +146,6 @@ func (s *Sequencer) onTrackCommand(cmd Command) {
 
 	s.tracks[id].HandleCommand(s.time.Now(), cmd)
 	return
-}
-
-func (s *Sequencer) play() {
-	if s.time.State() == TsStopped {
-		for _, t := range s.tracks {
-			t.Reset()
-		}
-	}
-	s.time.Play()
-	s.async.TryDispatch(Event{Id: EvPlaying})
-	s.logger.Info().Msg("play state: playing")
 }
 
 func (s *Sequencer) pause() {
@@ -203,18 +185,6 @@ func (s *Sequencer) removeTrack(id int) {
 	s.async.TryDispatch(Event{Id: EvTrackRemoved, TrackId: &id})
 }
 
-func (s *Sequencer) shouldStartPlaying(hasReceivedEvent bool) bool {
-	for _, t := range s.tracks {
-		if hasReceivedEvent && t.scheduledState == TrackStateRecording {
-			return true
-		}
-		if t.scheduledState == TrackStatePlaying {
-			return true
-		}
-	}
-	return false
-}
-
 func (s *Sequencer) setBeatPerBar(bpb int) {
 	if bpb < 1 {
 		return
@@ -227,4 +197,44 @@ func (s *Sequencer) setBeatPerBar(bpb int) {
 	}
 
 	s.beatPerBar = bpb
+}
+
+func (s *Sequencer) requestPlay() {
+	s.playRequested = true
+}
+
+func (s *Sequencer) play() {
+	if s.time.State() == TsStopped {
+		for _, t := range s.tracks {
+			t.Reset()
+		}
+	}
+	s.time.Play()
+	s.async.TryDispatch(Event{Id: EvPlaying})
+	s.logger.Info().Msg("play state: playing")
+}
+
+func (s *Sequencer) playIfRequired(hasReceivedEvent bool) bool {
+	if s.time.State() == TsPlaying {
+		return true
+	}
+
+	if s.playRequested {
+		s.playRequested = false
+		s.play()
+		return true
+	}
+
+	for _, t := range s.tracks {
+		if hasReceivedEvent && t.scheduledState == TrackStateRecording {
+			s.play()
+			return true
+		}
+		if t.scheduledState == TrackStatePlaying {
+			s.play()
+			return true
+		}
+	}
+
+	return false
 }
