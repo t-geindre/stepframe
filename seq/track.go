@@ -28,6 +28,7 @@ type Track struct {
 	logger          zerolog.Logger
 	id              int
 	recordRealStart int64
+	noteTracker     *NoteTracker
 }
 
 func NewTrack(logger zerolog.Logger, id int, clock clock.Clock, dispatch func(Event) bool) *Track {
@@ -47,13 +48,14 @@ func NewTrack(logger zerolog.Logger, id int, clock clock.Clock, dispatch func(Ev
 		logger:         logger.With().Str("component", "track").Logger(),
 		dispatch:       dispatch,
 		id:             id,
+		noteTracker:    NewNoteTracker(),
 	}
 }
 func (t *Track) PollDue(nowLocal int64) []midi.Message {
 	t.setDueState(nowLocal)
 
 	if t.state != TrackStatePlaying && t.state != TrackStateRecording {
-		return nil
+		return t.noteTracker.Flush()
 	}
 
 	// Auto stop recording
@@ -63,7 +65,12 @@ func (t *Track) PollDue(nowLocal int64) []midi.Message {
 		}
 	}
 
-	return t.Track.PollDue(nowLocal)
+	msgs := t.Track.PollDue(nowLocal)
+	for _, msg := range msgs {
+		t.noteTracker.Track(msg)
+	}
+
+	return msgs
 }
 
 func (t *Track) AddEvent(atLocalTick int64, msg midi.Message) {
