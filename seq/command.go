@@ -10,6 +10,8 @@ const (
 	CmdStopRecord
 	CmdNewTrack
 	CmdRemoveTrack
+	CmdAddBeatPerBar
+	CmdSubBeatPerBar
 )
 
 type Command struct {
@@ -32,6 +34,8 @@ const (
 	EvStopRecording
 	EvTrackAdded
 	EvTrackRemoved
+	EvAddBeatPerBar
+	EvSubBeatPerBar
 )
 
 type Event struct {

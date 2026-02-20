@@ -21,6 +21,7 @@ const (
 	IconClear Icon = iota
 	IconDelete
 	IconGear
+	IconMinus
 	IconPause
 	IconPlay
 	IconPlus
@@ -56,12 +57,13 @@ var iconsMap = map[Icon]struct{ x, y float64 }{
 	IconClear:  {0, 0},
 	IconDelete: {1, 0},
 	IconGear:   {2, 0},
-	IconPause:  {3, 0},
-	IconPlay:   {4, 0},
-	IconPlus:   {5, 0},
-	IconRecord: {6, 0},
-	IconStop:   {7, 0},
-	IconLed:    {0, 1},
+	IconMinus:  {3, 0},
+	IconPause:  {4, 0},
+	IconPlay:   {5, 0},
+	IconPlus:   {6, 0},
+	IconRecord: {7, 0},
+	IconStop:   {0, 1},
+	IconLed:    {1, 1},
 }
 
 type IconsBuilder struct {

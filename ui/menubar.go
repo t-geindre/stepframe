@@ -5,21 +5,27 @@ import (
 	"stepframe/ui/container"
 	"stepframe/ui/theme"
 	"stepframe/ui/widgets"
+	"strconv"
 
 	"github.com/ebitenui/ebitenui/widget"
 )
 
 type TopBar struct {
 	*container.Bar
-	beatLed   *widgets.Icon
+	beatLed *widgets.Icon
+
 	playIcon  *widgets.Icon
 	playLabel *widget.Text
 	playing   bool
+
+	beatPerBar      int
+	beatPerBarLabel *widget.Text
 }
 
 func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 	t := &TopBar{
-		Bar: container.NewBar(),
+		Bar:        container.NewBar(),
+		beatPerBar: 4,
 	}
 
 	// BPM LED
@@ -56,15 +62,24 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 	})
 	stopButton.AddChild(stopIcon, stopLabel)
 
+	// Beat per bar
+	bpbPlusBtn := widgets.NewButton(func() {
+		sequencer.TryCommand(seq.Command{Id: seq.CmdAddBeatPerBar})
+	})
+	bpbPlusBtn.AddChild(widgets.NewIcon(theme.IconPlus, theme.IconSizeSmall))
+	bpbMinusBtn := widgets.NewButton(func() {
+		sequencer.TryCommand(seq.Command{Id: seq.CmdSubBeatPerBar})
+	})
+	bpbMinusBtn.AddChild(widgets.NewIcon(theme.IconMinus, theme.IconSizeSmall))
+	t.beatPerBarLabel = widgets.NewText(strconv.Itoa(t.beatPerBar))
+
 	// Place widgets
 	t.Bar.Left.AddChild(addBtn)
-
-	t.Bar.Center.AddChild(t.beatLed)
-	t.Bar.Center.AddChild(playButton)
-	t.Bar.Center.AddChild(stopButton)
-
+	t.Bar.Center.AddChild(t.beatLed, playButton, stopButton)
 	t.Bar.Right.AddChild(widgets.NewText("BPM 120"))
-	t.Bar.Right.AddChild(widgets.NewText("BPB 4"))
+	t.Bar.Right.AddChild(
+		widgets.NewText("BPB"), bpbMinusBtn, t.beatPerBarLabel, bpbPlusBtn,
+	)
 
 	return t
 }
@@ -86,5 +101,18 @@ func (t *TopBar) HandleEvent(event seq.Event) {
 		t.playIcon.SetIcon(theme.IconPause)
 		t.playLabel.Label = "Pause"
 		t.Bar.RequestRelayout()
+	case seq.EvAddBeatPerBar:
+		t.SetBeatPerBar(t.beatPerBar + 1)
+	case seq.EvSubBeatPerBar:
+		t.SetBeatPerBar(t.beatPerBar - 1)
 	}
+}
+func (t *TopBar) SetBeatPerBar(bpb int) {
+	if bpb < 1 {
+		return
+	}
+
+	t.beatPerBar = bpb
+	t.beatPerBarLabel.Label = strconv.Itoa(bpb)
+	t.Bar.RequestRelayout()
 }
