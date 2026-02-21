@@ -96,10 +96,10 @@ func (t *Track) HandleCommand(nowLocal int64, cmd Command) {
 	case CmdRecord:
 		t.scheduleState(TrackStateRecording, t.getNextBarTick(nowLocal))
 	case CmdStopRecord:
-		if t.state == TrackStateRecording {
+		if t.state == TrackStateRecording || t.state == TrackStatePlaying {
 			t.setState(TrackStatePlaying)
 		} else if t.scheduledState == TrackStateRecording {
-			t.scheduleState(TrackStatePlaying, t.getNextBarTick(nowLocal))
+			t.scheduleState(TrackStateStopped, t.getNextBarTick(nowLocal))
 		}
 	default:
 		t.logger.Warn().Int("cmdId", int(cmd.Id)).Msg("unknown command")
@@ -143,6 +143,11 @@ func (t *Track) setState(state TrackState) {
 }
 
 func (t *Track) scheduleState(state TrackState, atLocal int64) {
+	if state != TrackStateRecording && atLocal == 0 {
+		t.setState(state)
+		return
+	}
+
 	t.scheduledState = state
 	t.scheduledAt = atLocal
 

@@ -230,10 +230,6 @@ func (s *Sequencer) playIfRequired(hasReceivedEvent bool) bool {
 			s.play()
 			return true
 		}
-		if t.scheduledState == TrackStatePlaying {
-			s.play()
-			return true
-		}
 	}
 
 	return false
