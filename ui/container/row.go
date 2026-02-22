@@ -64,6 +64,10 @@ func (r *Row) WithForeground() *Row {
 	widget.ContainerOpts.BackgroundImage(theme.Current.PanelTheme.ForegroundImage)(r.Container)
 	return r
 }
+func (r *Row) WithMinSize(width, height int) *Row {
+	widget.ContainerOpts.WidgetOpts(widget.WidgetOpts.MinSize(width, height))(r.Container)
+	return r
+}
 
 func (r *Row) AddChild(children ...widget.PreferredSizeLocateableWidget) widget.RemoveChildFunc {
 	for _, child := range children {

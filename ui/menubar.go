@@ -68,7 +68,7 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 
 func (t *TopBar) HandleEvent(event seq.Event) {
 	if event.TrackId != nil {
-		return // Track command, ignore
+		return // TrackCommands command, ignore
 	}
 	switch event.Id {
 	case seq.EvBeat:

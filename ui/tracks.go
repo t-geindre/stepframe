@@ -26,19 +26,19 @@ func NewTracks(logger zerolog.Logger, sequencer *seq.Sequencer) *Tracks {
 }
 
 func (t *Tracks) HandleEvent(e seq.Event) {
+	if e.TrackId != nil {
+		switch e.Id {
+		case seq.EvTrackAdded:
+			t.addTrack(*e.TrackId)
+			return
+		case seq.EvTrackRemoved:
+			t.removeTrack(*e.TrackId)
+			return
+		}
+	}
+
 	for _, track := range t.tacks {
 		track.HandleEvent(e)
-	}
-
-	if e.TrackId == nil {
-		return // No error, ignore command
-	}
-
-	switch e.Id {
-	case seq.EvTrackAdded:
-		t.addTrack(*e.TrackId)
-	case seq.EvTrackRemoved:
-		t.removeTrack(*e.TrackId)
 	}
 }
 

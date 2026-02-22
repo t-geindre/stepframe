@@ -13,7 +13,6 @@ func NewRoot() *Root {
 		Container: widget.NewContainer(
 			widget.ContainerOpts.Layout(widget.NewGridLayout(
 				widget.GridLayoutOpts.Columns(1),
-				widget.GridLayoutOpts.Stretch([]bool{true}, []bool{false, true}),
 			)),
 		),
 	}
