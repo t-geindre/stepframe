@@ -6,6 +6,7 @@ import (
 	"stepframe/seq"
 	"stepframe/ui/container"
 	"stepframe/ui/theme"
+	"stepframe/ui/widgets"
 
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/widget"
@@ -53,10 +54,7 @@ func New(
 	ui.root.AddChild(ui.menu)
 	ui.root.AddChild(ui.tracks)
 
-	return &ebitenui.UI{
-		Container:    ui.root,
-		PrimaryTheme: theme.Current.Theme,
-	}
+	return widgets.NewUi(ui.root)
 }
 
 func (u *Ui) drainSequencer() {

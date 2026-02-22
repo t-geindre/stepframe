@@ -73,14 +73,16 @@ func NewTrack(id int, sequencer *seq.Sequencer) *Track {
 	deleteIcon := widgets.NewIcon(theme.IconDelete, theme.IconSizeMedium)
 	deleteButton.AddChild(deleteIcon)
 
+	optionsWin := widgets.NewWindow(300, 200).WithTitleBar(theme.IconGear, "Track Options")
 	optionsButton := widgets.NewButton(func() {
-		// sequencer.TryCommand(seq.Command{Id: seq.CmdOpenTrackOptions, TrackId: &id}) // TODO
+		optionsWin.Open()
 	})
+	optionsWin.AttachedTo(optionsButton)
 	optionsIcon := widgets.NewIcon(theme.IconGear, theme.IconSizeMedium)
 	optionsButton.AddChild(optionsIcon)
 
 	t.Row = container.NewHorizontalRow().WithPadding().WithForeground()
-	t.Row.AddChild(widgets.NewText(fmt.Sprintf(" %02d", id+1)))
+	t.Row.AddChild(widgets.NewLabel(fmt.Sprintf(" %02d", id+1)))
 	t.Row.AddChild(playButton, recordButton)
 	t.Row.AddChild(clearButton, deleteButton, optionsButton)
 

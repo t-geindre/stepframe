@@ -38,9 +38,11 @@ func NewTrack(logger zerolog.Logger, id int, clock clock.Clock, dispatch func(Ev
 		clock.GetTicksPerQuarter()/4, // todo time signature should be configurable
 		track.QuantizeNearest,
 	)
+	velocity := track.NewVelocity(quantizer)
+	velocity.SetMinMax(127, 127)
 
 	return &Track{
-		Track:          quantizer,
+		Track:          velocity,
 		quantizer:      quantizer,
 		clock:          clock,
 		state:          TrackStateStopped,

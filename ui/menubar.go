@@ -39,12 +39,12 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 	})
 	addBtn.AddChild(
 		widgets.NewIcon(theme.IconPlus, theme.IconSizeMedium),
-		widgets.NewText("Track"),
+		widgets.NewLabel("Track"),
 	)
 
 	// Play button
 	t.playIcon = widgets.NewIcon(theme.IconPlay, theme.IconSizeMedium)
-	t.playLabel = widgets.NewText("Play")
+	t.playLabel = widgets.NewLabel("Play")
 	playButton := widgets.NewButton(func() {
 		if t.playing {
 			sequencer.TryCommand(seq.Command{Id: seq.CmdPause})
@@ -56,7 +56,7 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 
 	// Stop button
 	stopIcon := widgets.NewIcon(theme.IconStop, theme.IconSizeMedium)
-	stopLabel := widgets.NewText("Stop")
+	stopLabel := widgets.NewLabel("Stop")
 	stopButton := widgets.NewButton(func() {
 		sequencer.TryCommand(seq.Command{Id: seq.CmdStop})
 	})
@@ -71,14 +71,14 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 		sequencer.TryCommand(seq.Command{Id: seq.CmdSubBeatPerBar})
 	})
 	bpbMinusBtn.AddChild(widgets.NewIcon(theme.IconMinus, theme.IconSizeSmall))
-	t.beatPerBarLabel = widgets.NewText(strconv.Itoa(t.beatPerBar))
+	t.beatPerBarLabel = widgets.NewLabel(strconv.Itoa(t.beatPerBar))
 
 	// Place widgets
 	t.Bar.Left.AddChild(addBtn)
 	t.Bar.Center.AddChild(t.beatLed, playButton, stopButton)
-	t.Bar.Right.AddChild(widgets.NewText("BPM 120"))
+	t.Bar.Right.AddChild(widgets.NewLabel("BPM 120"))
 	t.Bar.Right.AddChild(
-		widgets.NewText("BPB"), bpbMinusBtn, t.beatPerBarLabel, bpbPlusBtn,
+		widgets.NewLabel("BPB"), bpbMinusBtn, t.beatPerBarLabel, bpbPlusBtn,
 	)
 
 	return t

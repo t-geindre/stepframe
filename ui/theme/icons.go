@@ -29,6 +29,8 @@ const (
 	IconStop
 	IconLed
 
+	IconNone
+
 	IconCellSize float64 = 64
 )
 

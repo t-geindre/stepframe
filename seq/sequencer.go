@@ -183,6 +183,10 @@ func (s *Sequencer) removeTrack(id int) {
 
 	delete(s.tracks, id)
 	s.async.TryDispatch(Event{Id: EvTrackRemoved, TrackId: &id})
+
+	if len(s.tracks) == 0 {
+		s.stop()
+	}
 }
 
 func (s *Sequencer) setBeatPerBar(bpb int) {
