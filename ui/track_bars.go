@@ -22,9 +22,11 @@ type TrackBars struct {
 
 func NewTrackBars() *TrackBars {
 	t := &TrackBars{
-		Containerer: container.NewHorizontalRow().WithPadding().WithForeground(),
-		bars:        make([]*container.Row, 0),
-		barWidth:    BarWidth,
+		Containerer: container.NewRow().
+			SetPadding(theme.Current.PanelTheme.Padding).
+			SetSpacing(theme.Current.PanelTheme.Spacing),
+		bars:     make([]*container.Row, 0),
+		barWidth: BarWidth,
 	}
 
 	t.add = widgets.NewButton(t.AddBar)
@@ -44,7 +46,7 @@ func (t *TrackBars) HandleEvent(e any) {
 }
 
 func (t *TrackBars) AddBar() {
-	bar := container.NewHorizontalRow().WithBackground().WithMinSize(t.barWidth, BarHeight)
+	bar := container.NewRow().SetMinSize(t.barWidth, BarHeight).SetBackgroundImage(theme.Current.PanelTheme.BackgroundImage)
 	t.bars = append(t.bars, bar)
 	t.Containerer.AddChild(bar)
 	t.Resize()

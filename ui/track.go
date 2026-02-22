@@ -3,6 +3,7 @@ package ui
 import (
 	"stepframe/seq"
 	"stepframe/ui/container"
+	"stepframe/ui/theme"
 
 	"github.com/ebitenui/ebitenui/widget"
 )
@@ -19,11 +20,17 @@ type Track struct {
 
 func NewTrack(id int, sequencer *seq.Sequencer) *Track {
 	t := &Track{
-		Containerer: container.NewVerticalRow().WitSpacing().StretchContent(),
-		id:          id,
-		sequencer:   sequencer,
-		commands:    NewTrackCommands(id, sequencer),
-		bars:        NewTrackBars(),
+		Containerer: container.NewRow().
+			SetDirection(widget.DirectionVertical).
+			SetSpacing(theme.Current.PanelTheme.Spacing).
+			SetPadding(theme.Current.PanelTheme.Padding).
+			SetBackgroundImage(theme.Current.PanelTheme.ForegroundImage).
+			SetContentPosition(widget.RowLayoutPositionStart).
+			SetContentStretch(true),
+		id:        id,
+		sequencer: sequencer,
+		commands:  NewTrackCommands(id, sequencer),
+		bars:      NewTrackBars(),
 	}
 
 	t.AddChild(t.commands, t.bars)

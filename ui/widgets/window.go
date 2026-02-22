@@ -25,7 +25,11 @@ func NewWindow(preferredW, preferredH int) *Window {
 		preferredH: preferredH,
 		options: []widget.WindowOpt{
 			widget.WindowOpts.Contents(
-				container.NewHorizontalRow().WithPadding().WithBackground(),
+				container.NewRow().
+					SetDirection(widget.DirectionVertical).
+					SetPadding(theme.Current.PanelTheme.Padding).
+					SetSpacing(theme.Current.PanelTheme.Spacing).
+					SetBackgroundImage(theme.Current.PanelTheme.BackgroundImage),
 			),
 			widget.WindowOpts.Modal(),
 			widget.WindowOpts.CloseMode(widget.CLICK_OUT),
@@ -39,7 +43,11 @@ func NewWindow(preferredW, preferredH int) *Window {
 }
 
 func (w *Window) WithTitleBar(icon theme.Icon, title string) *Window {
-	header := container.NewHorizontalRow().WithPadding().WitSpacing().WithForeground()
+	header := container.NewRow().
+		SetPadding(theme.Current.PanelTheme.Padding).
+		SetSpacing(theme.Current.PanelTheme.Spacing).
+		SetBackgroundImage(theme.Current.PanelTheme.ForegroundImage)
+
 	if icon != theme.IconNone {
 		header.AddChild(NewIcon(icon, theme.IconSizeMedium))
 	}
@@ -61,14 +69,7 @@ func (w *Window) AttachedTo(c widget.Containerer) *Window {
 }
 
 func (w *Window) Open() {
-	if w.Window == nil {
-		w.Window = widget.NewWindow(w.options...)
-		w.Contents.GetWidget().OnUpdate = func(widget.HasWidget) {
-			if w.IsOpen() {
-				w.relocate()
-			}
-		}
-	}
+	w.build()
 	w.relocate()
 	w.close = currentUi.AddWindow(w.Window)
 }
@@ -82,6 +83,11 @@ func (w *Window) Close() {
 
 func (w *Window) IsOpen() bool {
 	return w.close != nil
+}
+
+func (w *Window) AddChild(children ...widget.PreferredSizeLocateableWidget) widget.RemoveChildFunc {
+	w.build()
+	return w.Contents.AddChild(children...)
 }
 
 func (w *Window) relocate() {
@@ -132,4 +138,15 @@ func (w *Window) relocate() {
 	}
 
 	w.Window.GetContainer().SetLocation(wRect)
+}
+
+func (w *Window) build() {
+	if w.Window == nil {
+		w.Window = widget.NewWindow(w.options...)
+		w.Contents.GetWidget().OnUpdate = func(widget.HasWidget) {
+			if w.IsOpen() {
+				w.relocate()
+			}
+		}
+	}
 }

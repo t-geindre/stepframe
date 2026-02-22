@@ -37,7 +37,9 @@ func New(
 	theme.SetDefaultTheme()
 
 	ui := &Ui{
-		root:      container.NewRoot(),
+		root: container.NewGrid().
+			SetColumns(1).
+			SetStretch([]bool{true}, []bool{false, true}),
 		clock:     &clock,
 		sequencer: sequencer,
 		sender:    sender,

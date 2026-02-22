@@ -78,10 +78,13 @@ func NewTrackCommands(id int, sequencer *seq.Sequencer) *TrackCommands {
 		optionsWin.Open()
 	})
 	optionsWin.AttachedTo(optionsButton)
+	optionsWin.AddChild(widgets.NewLabel("test"), widgets.NewIcon(theme.IconPlus, theme.IconSizeMedium))
 	optionsIcon := widgets.NewIcon(theme.IconGear, theme.IconSizeMedium)
 	optionsButton.AddChild(optionsIcon)
 
-	tc.Row = container.NewHorizontalRow().WithPadding().WithForeground()
+	tc.Row = container.NewRow().
+		SetSpacing(theme.Current.PanelTheme.Spacing).
+		SetPadding(theme.Current.PanelTheme.Padding)
 	tc.Row.AddChild(widgets.NewLabel(fmt.Sprintf(" %02d", id+1)))
 	tc.Row.AddChild(playButton, recordButton)
 	tc.Row.AddChild(clearButton, deleteButton, optionsButton)

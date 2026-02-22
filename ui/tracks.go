@@ -3,6 +3,7 @@ package ui
 import (
 	"stepframe/seq"
 	"stepframe/ui/container"
+	"stepframe/ui/theme"
 
 	"github.com/ebitenui/ebitenui/widget"
 	"github.com/rs/zerolog"
@@ -17,8 +18,12 @@ type Tracks struct {
 
 func NewTracks(logger zerolog.Logger, sequencer *seq.Sequencer) *Tracks {
 	return &Tracks{
-		Row: container.NewVerticalRow().AlignContent(widget.RowLayoutPositionStart).
-			WithPadding().StretchContent(),
+		Row: container.NewRow().
+			SetDirection(widget.DirectionVertical).
+			SetContentPosition(widget.RowLayoutPositionStart).
+			SetPadding(theme.Current.PanelTheme.Padding).
+			SetSpacing(theme.Current.PanelTheme.Spacing).
+			SetContentStretch(true),
 		tacks:     make(map[int]*Track),
 		sequencer: sequencer,
 		logger:    logger.With().Str("component", "ui_tracks").Logger(),

@@ -75,7 +75,7 @@ func SetDefaultTheme() {
 	theme := &Theme{
 		PanelTheme: &PanelTheme{
 			ForegroundImage: NewNineSliceRounded(cSurfacePanelFg, 5),
-			BackgroundImage: image.NewNineSliceColor(cSurfacePanelBg),
+			BackgroundImage: NewNineSliceRounded(cSurfacePanelBg, 5),
 			Padding:         &widget.Insets{Left: 10, Right: 10, Top: 5, Bottom: 5},
 			Spacing:         10,
 		},

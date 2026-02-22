@@ -10,7 +10,7 @@ import (
 )
 
 type TopBar struct {
-	*container.Bar
+	widget.Containerer
 	beatLed *widgets.Icon
 
 	playIcon  *widgets.Icon
@@ -19,8 +19,11 @@ type TopBar struct {
 }
 
 func NewTopBar(sequencer *seq.Sequencer) *TopBar {
-	t := &TopBar{
-		Bar: container.NewBar(),
+	t := &TopBar{Containerer: container.NewGrid().
+		SetColumns(3).
+		SetStretch([]bool{false, true, false}, []bool{false}).
+		SetSpacing(theme.Current.PanelTheme.Spacing, theme.Current.PanelTheme.Spacing).
+		SetPadding(theme.Current.PanelTheme.Padding),
 	}
 
 	// BPM LED
@@ -58,10 +61,11 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 	stopButton.AddChild(stopIcon, stopLabel)
 
 	// Place widgets
-	t.Bar.Left.AddChild(addBtn)
-	t.Bar.Center.AddChild(t.beatLed, playButton, stopButton)
-	t.Bar.Right.AddChild(widgets.NewLabel("BPM 120"))
-	t.Bar.Right.AddChild(widgets.NewLabel("BPB 4"))
+	left, center, right := t.getBox(), t.getBox(), t.getBox()
+	left.AddChild(addBtn)
+	center.AddChild(t.beatLed, playButton, stopButton)
+	right.AddChild(widgets.NewLabel("BPM 120"), widgets.NewLabel("BPB 4"))
+	t.AddChild(left, center, right)
 
 	return t
 }
@@ -77,11 +81,19 @@ func (t *TopBar) HandleEvent(event seq.Event) {
 		t.playing = false
 		t.playIcon.SetIcon(theme.IconPlay)
 		t.playLabel.Label = "Play"
-		t.Bar.RequestRelayout()
+		t.Containerer.RequestRelayout()
 	case seq.EvPlaying:
 		t.playing = true
 		t.playIcon.SetIcon(theme.IconPause)
 		t.playLabel.Label = "Pause"
-		t.Bar.RequestRelayout()
+		t.Containerer.RequestRelayout()
 	}
+}
+
+func (t *TopBar) getBox() widget.Containerer {
+	return container.NewRow().
+		SetBackgroundImage(theme.Current.PanelTheme.ForegroundImage).
+		SetPadding(theme.Current.PanelTheme.Padding).
+		SetSpacing(theme.Current.PanelTheme.Spacing).
+		SetContentStretch(true)
 }

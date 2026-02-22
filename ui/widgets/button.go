@@ -15,7 +15,7 @@ type Button struct {
 
 func NewButton(click func()) *Button {
 	return &Button{
-		Row:   container.NewHorizontalRow().WithPadding(),
+		Row:   container.NewRow().SetPadding(theme.Current.ButtonTheme.TextPadding).SetSpacing(theme.Current.PanelTheme.Spacing),
 		click: click,
 	}
 }

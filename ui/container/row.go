@@ -1,81 +1,55 @@
 package container
 
-import (
-	"stepframe/ui/theme"
-
-	"github.com/ebitenui/ebitenui/widget"
-)
+import "github.com/ebitenui/ebitenui/widget"
 
 type Row struct {
-	*widget.Container
-	layout  *widget.RowLayout
-	align   widget.RowLayoutPosition
-	stretch bool
+	*Container[*Row]
+	layout    *widget.RowLayout
+	cPosition widget.RowLayoutPosition
+	cStretch  bool
 }
 
-func newRow(d widget.Direction) *Row {
-	l := widget.NewRowLayout(
-		widget.RowLayoutOpts.Spacing(theme.Current.PanelTheme.Spacing),
-		widget.RowLayoutOpts.Direction(d),
-	)
-	return &Row{
-		Container: widget.NewContainer(
-			widget.ContainerOpts.Layout(l),
-		),
-		layout: l,
-		align:  widget.RowLayoutPositionCenter,
-	}
-}
+func NewRow() *Row {
+	row := &Row{}
+	row.layout = widget.NewRowLayout()
+	row.Container = NewContainer[*Row](row.layout, row)
+	row.cPosition = widget.RowLayoutPositionCenter
 
-func NewHorizontalRow() *Row {
-	return newRow(widget.DirectionHorizontal)
-}
-
-func NewVerticalRow() *Row {
-	return newRow(widget.DirectionVertical)
-}
-
-func (r *Row) AlignContent(position widget.RowLayoutPosition) *Row {
-	r.align = position
-	return r
-}
-
-func (r *Row) StretchContent() *Row {
-	r.stretch = true
-	return r
-}
-
-func (r *Row) WitSpacing() *Row {
-	widget.RowLayoutOpts.Spacing(theme.Current.PanelTheme.Spacing)(r.layout)
-	return r
-}
-
-func (r *Row) WithPadding() *Row {
-	widget.RowLayoutOpts.Padding(theme.Current.PanelTheme.Padding)(r.layout)
-	return r
-}
-
-func (r *Row) WithBackground() *Row {
-	widget.ContainerOpts.BackgroundImage(theme.Current.PanelTheme.BackgroundImage)(r.Container)
-	return r
-}
-
-func (r *Row) WithForeground() *Row {
-	widget.ContainerOpts.BackgroundImage(theme.Current.PanelTheme.ForegroundImage)(r.Container)
-	return r
-}
-func (r *Row) WithMinSize(width, height int) *Row {
-	widget.ContainerOpts.WidgetOpts(widget.WidgetOpts.MinSize(width, height))(r.Container)
-	return r
+	return row
 }
 
 func (r *Row) AddChild(children ...widget.PreferredSizeLocateableWidget) widget.RemoveChildFunc {
-	for _, child := range children {
-		widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-			Position: r.align,
-			Stretch:  r.stretch,
-		})(child.GetWidget())
+	for _, c := range children {
+		c.GetWidget().LayoutData = widget.RowLayoutData{
+			Position: r.cPosition,
+			Stretch:  r.cStretch,
+		}
 	}
 
 	return r.Container.AddChild(children...)
+}
+
+func (r *Row) SetDirection(d widget.Direction) *Row {
+	widget.RowLayoutOpts.Direction(d)(r.layout)
+	return r
+}
+
+func (r *Row) SetSpacing(spacing int) *Row {
+	widget.RowLayoutOpts.Spacing(spacing)(r.layout)
+	return r
+}
+
+func (r *Row) SetPadding(padding *widget.Insets) *Row {
+	widget.RowLayoutOpts.Padding(padding)(r.layout)
+	return r
+}
+
+func (r *Row) SetContentPosition(position widget.RowLayoutPosition) *Row {
+	r.cPosition = position
+	return r
+}
+
+func (r *Row) SetContentStretch(stretch bool) *Row {
+	r.cStretch = stretch
+	return r
 }
