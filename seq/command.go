@@ -34,8 +34,6 @@ const (
 	EvStopRecording
 	EvTrackAdded
 	EvTrackRemoved
-	EvAddBeatPerBar
-	EvSubBeatPerBar
 )
 
 type Event struct {

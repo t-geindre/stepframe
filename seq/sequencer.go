@@ -22,7 +22,6 @@ type Sequencer struct {
 	tracks       map[int]*Track
 	trackIds     int
 
-	beatPerBar    int
 	playRequested bool
 }
 
@@ -44,7 +43,6 @@ func NewSequencer(
 		time:         NewTimeShifter(),
 		forwardInOut: true,
 		tracks:       make(map[int]*Track),
-		beatPerBar:   4,
 	}
 }
 
@@ -126,10 +124,6 @@ func (s *Sequencer) onCommand(cmd Command) {
 		s.stop()
 	case CmdNewTrack:
 		s.newTrack()
-	case CmdAddBeatPerBar:
-		s.setBeatPerBar(s.beatPerBar + 1)
-	case CmdSubBeatPerBar:
-		s.setBeatPerBar(s.beatPerBar - 1)
 	default:
 		s.logger.Warn().Int("cmdId", int(cmd.Id)).Msg("unknown command")
 		return
@@ -187,20 +181,6 @@ func (s *Sequencer) removeTrack(id int) {
 	if len(s.tracks) == 0 {
 		s.stop()
 	}
-}
-
-func (s *Sequencer) setBeatPerBar(bpb int) {
-	if bpb < 1 {
-		return
-	}
-
-	if bpb > s.beatPerBar {
-		defer s.async.TryDispatch(Event{Id: EvAddBeatPerBar})
-	} else if bpb < s.beatPerBar {
-		defer s.async.TryDispatch(Event{Id: EvSubBeatPerBar})
-	}
-
-	s.beatPerBar = bpb
 }
 
 func (s *Sequencer) requestPlay() {
