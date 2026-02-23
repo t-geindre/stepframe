@@ -12,15 +12,14 @@ import (
 
 type Track struct {
 	widget.Containerer
-
-	id        int
-	sequencer *seq.Sequencer
-
+	state    *TrackState
 	commands *TrackCommands
 	bars     *TrackBars
 }
 
 func NewTrack(id int, sequencer *seq.Sequencer) *Track {
+	state := NewTrackState(id, sequencer)
+
 	left := widgets.NewLabel(fmt.Sprintf(" %02d", id+1))
 
 	right := container.NewRow().
@@ -28,7 +27,7 @@ func NewTrack(id int, sequencer *seq.Sequencer) *Track {
 		SetSpacing(theme.Current.PanelTheme.Spacing).
 		SetContentStretch(true)
 
-	commands := NewTrackCommands(id, sequencer)
+	commands := NewTrackCommands(state)
 	bars := NewTrackBars()
 	right.AddChild(commands, bars)
 
@@ -43,8 +42,7 @@ func NewTrack(id int, sequencer *seq.Sequencer) *Track {
 
 	t := &Track{
 		Containerer: cont,
-		id:          id,
-		sequencer:   sequencer,
+		state:       state,
 		commands:    commands,
 		bars:        bars,
 	}
@@ -53,6 +51,7 @@ func NewTrack(id int, sequencer *seq.Sequencer) *Track {
 }
 
 func (t *Track) HandleEvent(e seq.Event) {
+	t.state.HandleEvent(e)
 	t.commands.HandleEvent(e)
 	t.bars.HandleEvent(e)
 }
