@@ -18,12 +18,13 @@ type Icons map[Icon]*ebiten.Image
 type Icon int
 
 const (
-	IconClear Icon = iota
+	IconBarDelete Icon = iota
 	IconDelete
 	IconGear
 	IconMinus
 	IconPause
 	IconPlay
+	IconBarAdd
 	IconPlus
 	IconRecord
 	IconStop
@@ -56,16 +57,17 @@ const (
 )
 
 var iconsMap = map[Icon]struct{ x, y float64 }{
-	IconClear:  {0, 0},
-	IconDelete: {1, 0},
-	IconGear:   {2, 0},
-	IconMinus:  {3, 0},
-	IconPause:  {4, 0},
-	IconPlay:   {5, 0},
-	IconPlus:   {6, 0},
-	IconRecord: {7, 0},
-	IconStop:   {0, 1},
-	IconLed:    {1, 1},
+	IconBarDelete: {0, 0},
+	IconDelete:    {1, 0},
+	IconGear:      {2, 0},
+	IconMinus:     {3, 0},
+	IconPause:     {4, 0},
+	IconPlay:      {5, 0},
+	IconBarAdd:    {6, 0},
+	IconPlus:      {7, 0},
+	IconRecord:    {0, 1},
+	IconStop:      {1, 1},
+	IconLed:       {2, 1},
 }
 
 type IconsBuilder struct {

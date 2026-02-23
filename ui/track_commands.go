@@ -5,64 +5,76 @@ import (
 	"stepframe/ui/container"
 	"stepframe/ui/theme"
 	"stepframe/ui/widgets"
+
+	"github.com/ebitenui/ebitenui/widget"
 )
 
 type TrackCommands struct {
-	*container.Row
-	Id                 int
-	playLed, recordLed *widgets.Icon
-	playIcon           *widgets.Icon
-	state              *TrackState
+	widget.Containerer
+	playPulse, recordPulse *widgets.Icon
+	playIcon               *widgets.Icon
+	state                  *TrackState
 }
 
 func NewTrackCommands(state *TrackState) *TrackCommands {
 	tc := &TrackCommands{state: state}
 
-	playButton := widgets.NewButton(state.TogglePlay)
+	// Play button
+	playBtn := widgets.NewButton(state.TogglePlay)
 	tc.playIcon = widgets.NewIcon(theme.IconPlay, theme.IconSizeMedium)
-	tc.playLed = widgets.NewIcon(theme.IconLed, theme.IconSizeSmall)
-	playButton.AddChild(tc.playIcon, tc.playLed)
+	tc.playPulse = widgets.NewIcon(theme.IconLed, theme.IconSizeMedium)
+	playBtn.AddChild(tc.playIcon, tc.playPulse)
 
-	recordButton := widgets.NewButton(state.ToggleRecord)
+	// Record button
+	recordBtn := widgets.NewButton(state.ToggleRecord)
 	recordIcon := widgets.NewIcon(theme.IconRecord, theme.IconSizeMedium)
-	tc.recordLed = widgets.NewIcon(theme.IconLed, theme.IconSizeSmall)
-	recordButton.AddChild(recordIcon, tc.recordLed)
+	tc.recordPulse = widgets.NewIcon(theme.IconLed, theme.IconSizeMedium)
+	recordBtn.AddChild(recordIcon, tc.recordPulse)
 
-	clearButton := widgets.NewButton(func() {
-		// sequencer.TryCommand(seq.Command{Id: seq.CmdClear, TrackId: &id}) // TODO
-	})
-	clearIcon := widgets.NewIcon(theme.IconClear, theme.IconSizeMedium)
-	clearButton.AddChild(clearIcon)
+	// Delete button
+	deleteBtn := widgets.NewButton(state.Delete)
+	deleteBtn.AddChild(widgets.NewIcon(theme.IconDelete, theme.IconSizeMedium))
 
-	deleteButton := widgets.NewButton(state.Delete)
-	deleteIcon := widgets.NewIcon(theme.IconDelete, theme.IconSizeMedium)
-	deleteButton.AddChild(deleteIcon)
+	// Delete bar button
+	barDeleteBtn := widgets.NewButton(nil) // Todo state.DeleteBar
+	barDeleteBtn.AddChild(widgets.NewIcon(theme.IconBarDelete, theme.IconSizeMedium))
 
-	optionsWin := widgets.NewWindow(300, 200).WithTitleBar(theme.IconGear, "TrackCommands Options")
-	optionsButton := widgets.NewButton(func() {
-		optionsWin.Open()
-	})
-	optionsWin.AttachedTo(optionsButton)
-	optionsWin.AddChild(widgets.NewLabel("test"), widgets.NewIcon(theme.IconPlus, theme.IconSizeMedium))
-	optionsIcon := widgets.NewIcon(theme.IconGear, theme.IconSizeMedium)
-	optionsButton.AddChild(optionsIcon)
+	// Add bar button
+	barAddBtn := widgets.NewButton(state.AddBar)
+	barAddBtn.AddChild(widgets.NewIcon(theme.IconBarAdd, theme.IconSizeMedium))
 
-	tc.Row = container.NewRow().SetSpacing(theme.Current.PanelTheme.Spacing)
-	tc.Row.AddChild(playButton, recordButton)
-	tc.Row.AddChild(clearButton, deleteButton, optionsButton)
+	// Container
+	const columns = 3
+	tc.Containerer = container.NewGrid().
+		// Todo apply separator instead of more spacing
+		SetSpacing(theme.Current.PanelTheme.Spacing*2, theme.Current.PanelTheme.Spacing).
+		SetColumns(columns)
+
+	// Columns
+	cols := make([]widget.Containerer, columns)
+	for i := 0; i < columns; i++ {
+		cols[i] = container.NewRow().SetSpacing(theme.Current.PanelTheme.Spacing)
+		tc.Containerer.AddChild(cols[i])
+	}
+
+	// Placement
+	cols[0].AddChild(playBtn, recordBtn)
+	cols[1].AddChild(deleteBtn)
+	cols[2].AddChild(barAddBtn, barDeleteBtn)
 
 	tc.applyVisualState()
+
 	return tc
 }
 
 func (tc *TrackCommands) HandleEvent(e seq.Event) {
 	if e.Id == seq.EvBeat {
-		tc.playLed.Pulse()
-		tc.recordLed.Pulse()
+		tc.playPulse.Pulse()
+		tc.recordPulse.Pulse()
 		return
 	}
 
-	if e.TrackId != nil && *e.TrackId == tc.Id {
+	if e.TrackId != nil && *e.TrackId == tc.state.id {
 		tc.applyVisualState()
 		return
 	}
@@ -78,29 +90,29 @@ func (tc *TrackCommands) applyVisualState() {
 		tc.playIcon.SetIcon(theme.IconPlay)
 	}
 
-	tc.playLed.SetPulseColor(theme.IconColorDefault)
+	tc.playPulse.SetPulseColor(theme.IconColorDefault)
 	switch {
 	case tc.state.armed == ArmStop:
-		tc.playLed.SetColor(theme.IconColorArmed)
+		tc.playPulse.SetColor(theme.IconColorArmed)
 	case playing:
-		tc.playLed.SetColor(theme.IconColorOn)
+		tc.playPulse.SetColor(theme.IconColorOn)
 	case tc.state.armed == ArmPlay || tc.state.armed == ArmRecord:
-		tc.playLed.SetColor(theme.IconColorArmed)
+		tc.playPulse.SetColor(theme.IconColorArmed)
 	default:
-		tc.playLed.SetColor(theme.IconColorIdle)
-		tc.playLed.SetPulseColor(theme.IconColorNone)
+		tc.playPulse.SetColor(theme.IconColorIdle)
+		tc.playPulse.SetPulseColor(theme.IconColorNone)
 	}
 
-	tc.recordLed.SetPulseColor(theme.IconColorDefault)
+	tc.recordPulse.SetPulseColor(theme.IconColorDefault)
 	switch {
 	case tc.state.armed == ArmRecord:
-		tc.recordLed.SetColor(theme.IconColorArmed)
+		tc.recordPulse.SetColor(theme.IconColorArmed)
 	case tc.state.armed == ArmStop && recording:
-		tc.recordLed.SetColor(theme.IconColorArmed)
+		tc.recordPulse.SetColor(theme.IconColorArmed)
 	case recording:
-		tc.recordLed.SetColor(theme.IconColorOn)
+		tc.recordPulse.SetColor(theme.IconColorOn)
 	default:
-		tc.recordLed.SetColor(theme.IconColorIdle)
-		tc.recordLed.SetPulseColor(theme.IconColorNone)
+		tc.recordPulse.SetColor(theme.IconColorIdle)
+		tc.recordPulse.SetPulseColor(theme.IconColorNone)
 	}
 }

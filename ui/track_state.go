@@ -28,6 +28,7 @@ type TrackState struct {
 
 func NewTrackState(id int, sequencer *seq.Sequencer) *TrackState {
 	return &TrackState{
+		id:        id,
 		mode:      ModeStopped,
 		armed:     ArmNone,
 		sequencer: sequencer,
@@ -54,8 +55,16 @@ func (s *TrackState) Delete() {
 	s.sequencer.TryCommand(seq.Command{Id: seq.CmdRemoveTrack, TrackId: &s.id})
 }
 
+func (s *TrackState) AddBar() {
+	//s.sequencer.TryCommand(seq.Command{Id: seq.CmdAddBar, TrackId: &s.id}) todo
+}
+
+func (s *TrackState) DeleteBar(index int) {
+	//s.sequencer.TryCommand(seq.Command{Id: seq.CmdRemoveBar, TrackId: &s.id, BarIndex: &index}) todo
+}
+
 func (s *TrackState) HandleEvent(e seq.Event) {
-	if e.TrackId != nil && *e.TrackId != s.id {
+	if e.TrackId == nil || *e.TrackId != s.id {
 		return
 	}
 
