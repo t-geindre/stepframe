@@ -1,9 +1,11 @@
 package ui
 
 import (
+	"fmt"
 	"stepframe/seq"
 	"stepframe/ui/container"
 	"stepframe/ui/theme"
+	"stepframe/ui/widgets"
 
 	"github.com/ebitenui/ebitenui/widget"
 )
@@ -19,21 +21,33 @@ type Track struct {
 }
 
 func NewTrack(id int, sequencer *seq.Sequencer) *Track {
-	t := &Track{
-		Containerer: container.NewRow().
-			SetDirection(widget.DirectionVertical).
-			SetSpacing(theme.Current.PanelTheme.Spacing).
-			SetPadding(theme.Current.PanelTheme.Padding).
-			SetBackgroundImage(theme.Current.PanelTheme.ForegroundImage).
-			SetContentPosition(widget.RowLayoutPositionStart).
-			SetContentStretch(true),
-		id:        id,
-		sequencer: sequencer,
-		commands:  NewTrackCommands(id, sequencer),
-		bars:      NewTrackBars(),
-	}
+	left := widgets.NewLabel(fmt.Sprintf(" %02d", id+1))
 
-	t.AddChild(t.commands, t.bars)
+	right := container.NewRow().
+		SetDirection(widget.DirectionVertical).
+		SetSpacing(theme.Current.PanelTheme.Spacing).
+		SetContentStretch(true)
+
+	commands := NewTrackCommands(id, sequencer)
+	bars := NewTrackBars()
+	right.AddChild(commands, bars)
+
+	cont := container.NewGrid().
+		SetColumns(2).
+		SetStretch([]bool{false, true}, []bool{true}).
+		SetSpacing(theme.Current.PanelTheme.Spacing, theme.Current.PanelTheme.Spacing).
+		SetPadding(theme.Current.PanelTheme.Padding).
+		SetBackgroundImage(theme.Current.PanelTheme.ForegroundImage)
+
+	cont.AddChild(left, right)
+
+	t := &Track{
+		Containerer: cont,
+		id:          id,
+		sequencer:   sequencer,
+		commands:    commands,
+		bars:        bars,
+	}
 
 	return t
 }

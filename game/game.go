@@ -41,6 +41,7 @@ func RunGame(logger zerolog.Logger, ctx context.Context, obj ...any) {
 	}
 
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
+	ebiten.SetWindowSize(1200, 800)
 
 	logger.Info().Msg("starting")
 	err := ebiten.RunGame(g)

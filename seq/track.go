@@ -91,6 +91,10 @@ func (t *Track) HandleCommand(nowLocal int64, cmd Command) {
 	case CmdPlay:
 		t.scheduleState(TrackStatePlaying, t.getNextBarTick(nowLocal))
 	case CmdStop:
+		if t.scheduledState == TrackStateStopped {
+			t.setState(TrackStatePlaying)
+			return
+		}
 		if t.state == TrackStateRecording {
 			t.setState(TrackStatePlaying)
 		}

@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"stepframe/seq"
 	"stepframe/ui/container"
 	"stepframe/ui/theme"
@@ -82,10 +81,7 @@ func NewTrackCommands(id int, sequencer *seq.Sequencer) *TrackCommands {
 	optionsIcon := widgets.NewIcon(theme.IconGear, theme.IconSizeMedium)
 	optionsButton.AddChild(optionsIcon)
 
-	tc.Row = container.NewRow().
-		SetSpacing(theme.Current.PanelTheme.Spacing).
-		SetPadding(theme.Current.PanelTheme.Padding)
-	tc.Row.AddChild(widgets.NewLabel(fmt.Sprintf(" %02d", id+1)))
+	tc.Row = container.NewRow().SetSpacing(theme.Current.PanelTheme.Spacing)
 	tc.Row.AddChild(playButton, recordButton)
 	tc.Row.AddChild(clearButton, deleteButton, optionsButton)
 
