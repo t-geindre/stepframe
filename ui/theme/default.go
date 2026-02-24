@@ -245,7 +245,7 @@ func SetDefaultTheme() {
 			IconRecord:    tileSheet.GetTile(TileRecord),
 			IconStop:      tileSheet.GetTile(TileStop),
 			IconButton:    tileSheet.GetTile(TileButton),
-			IconLed:       tileSheet.GetTile(TileLed),
+			IconLed:       tileSheet.GetTile(TileLedOff),
 			IconNone:      nil,
 		},
 		IconSizes: IconSizes{
@@ -278,6 +278,15 @@ func SetDefaultTheme() {
 			Pulse:         NewNineSliceRounded(cPulse, 10),
 			PulseStrength: 0.45,
 			PulseDuration: 150 * time.Millisecond,
+		},
+		LedTheme: &LedTheme{
+			OnImage:       tileSheet.GetTile(TileLedOn),
+			OffImage:      tileSheet.GetTile(TileLedOff),
+			OffsetX:       -24,
+			OffsetY:       -24,
+			Width:         16,
+			Height:        16,
+			PulseDuration: 300 * time.Millisecond,
 		},
 	}
 

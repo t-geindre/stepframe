@@ -11,7 +11,7 @@ import (
 
 type TrackCommands struct {
 	widget.Containerer
-	playPulse, recordPulse *widgets.Icon
+	playPulse, recordPulse *widgets.Led
 	playIcon               *widgets.Icon
 	state                  *TrackState
 }
@@ -22,13 +22,13 @@ func NewTrackCommands(state *TrackState) *TrackCommands {
 	// Play button
 	playBtn := widgets.NewButton(state.TogglePlay)
 	tc.playIcon = widgets.NewIcon(theme.IconPlay, theme.IconSizeMedium)
-	tc.playPulse = widgets.NewIcon(theme.IconLed, theme.IconSizeMedium)
+	tc.playPulse = widgets.NewLed(true, theme.IconColorNone)
 	playBtn.AddChild(tc.playIcon, tc.playPulse)
 
 	// Record button
 	recordBtn := widgets.NewButton(state.ToggleRecord)
 	recordIcon := widgets.NewIcon(theme.IconRecord, theme.IconSizeMedium)
-	tc.recordPulse = widgets.NewIcon(theme.IconLed, theme.IconSizeMedium)
+	tc.recordPulse = widgets.NewLed(true, theme.IconColorNone)
 	recordBtn.AddChild(recordIcon, tc.recordPulse)
 
 	// Delete button

@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
-// SRC: https://feathericons.com/
+// SRC: https://feathericons.com/ & https://iconoir.com/
 //
 //go:embed icons.png
 var sheet []byte
@@ -31,7 +31,8 @@ const (
 	TileButtonHover
 	TileButton
 	TileButtonPressed
-	TileLed
+	TileLedOn
+	TileLedOff
 )
 
 type TileMap map[Tile]struct{ x, y float64 }
@@ -50,7 +51,8 @@ var tileMap = TileMap{
 	TileButtonHover:   {2, 1},
 	TileButton:        {3, 1},
 	TileButtonPressed: {4, 1},
-	TileLed:           {5, 1},
+	TileLedOn:         {5, 1},
+	TileLedOff:        {6, 1},
 }
 
 type Sheet struct {

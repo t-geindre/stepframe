@@ -11,7 +11,7 @@ import (
 
 type TopBar struct {
 	widget.Containerer
-	beatLed *widgets.Icon
+	beatLed *widgets.Led
 
 	playIcon  *widgets.Icon
 	playLabel *widget.Text
@@ -27,9 +27,8 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 	}
 
 	// BPM LED
-	t.beatLed = widgets.NewIcon(theme.IconLed, theme.IconSizeMedium)
-	t.beatLed.SetColor(theme.IconColorIdle)
-	t.beatLed.SetPulseColor(theme.IconColorOn)
+	t.beatLed = widgets.NewLed(true, theme.IconColorIdle)
+	t.beatLed.SetPulseColor(theme.IconColorDefault)
 
 	// Add track
 	addBtn := widgets.NewButton(func() {
@@ -50,7 +49,7 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 			sequencer.TryCommand(seq.Command{Id: seq.CmdPlay})
 		}
 	})
-	playButton.AddChild(t.playIcon, t.playLabel)
+	playButton.AddChild(t.playIcon, t.playLabel, t.beatLed)
 
 	// Stop button
 	stopIcon := widgets.NewIcon(theme.IconStop, theme.IconSizeMedium)
@@ -63,7 +62,7 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 	// Place widgets
 	left, center, right := t.getBox(), t.getBox(), t.getBox()
 	left.AddChild(addBtn)
-	center.AddChild(t.beatLed, playButton, stopButton)
+	center.AddChild(playButton, stopButton)
 	right.AddChild(widgets.NewLabel("BPM 120"), widgets.NewLabel("BPB 4"))
 	t.AddChild(left, center, right)
 
@@ -78,11 +77,17 @@ func (t *TopBar) HandleEvent(event seq.Event) {
 	case seq.EvBeat:
 		t.beatLed.Pulse()
 	case seq.EvPaused, seq.EvStopped:
+		if event.Id == seq.EvPaused {
+			t.beatLed.SetColor(theme.IconColorArmed)
+		} else {
+			t.beatLed.SetColor(theme.IconColorIdle)
+		}
 		t.playing = false
 		t.playIcon.SetIcon(theme.IconPlay)
 		t.playLabel.Label = "Play"
 		t.Containerer.RequestRelayout()
 	case seq.EvPlaying:
+		t.beatLed.SetColor(theme.IconColorOn)
 		t.playing = true
 		t.playIcon.SetIcon(theme.IconPause)
 		t.playLabel.Label = "Pause"

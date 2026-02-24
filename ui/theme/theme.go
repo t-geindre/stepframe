@@ -20,6 +20,7 @@ type Theme struct {
 	IconColors    IconColors
 	MainMenuTheme *MainMenuTheme
 	PlayTheme     *PlayTheme
+	LedTheme      *LedTheme
 }
 
 type MainMenuTheme struct {
@@ -45,6 +46,14 @@ type PlayTheme struct {
 	Pulse         *image.NineSlice
 	PulseStrength float64
 	PulseDuration time.Duration
+}
+
+type LedTheme struct {
+	OnImage          *ebiten.Image
+	OffImage         *ebiten.Image
+	OffsetX, OffsetY int
+	Width, Height    int
+	PulseDuration    time.Duration
 }
 
 type Icons map[Icon]*ebiten.Image
