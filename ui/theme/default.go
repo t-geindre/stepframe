@@ -22,7 +22,6 @@ func SetDefaultTheme() {
 
 	// Surfaces
 	cSurfacePanelBg := color.RGBA{R: 0x21, G: 0x21, B: 0x21, A: 0xff}
-	cSurfacePanelFg := color.RGBA{R: 0x2b, G: 0x2d, B: 0x30, A: 0xff}
 	cSurfaceTabBg := color.NRGBA{32, 32, 32, 255}
 	cSurfaceListSelected := color.NRGBA{40, 40, 40, 255}
 	cSurfaceListSelectedFocused := color.NRGBA{50, 50, 50, 255}
@@ -66,7 +65,7 @@ func SetDefaultTheme() {
 	cPulse := colornames.White
 
 	// ICONS
-	iconsBuilder := NewIconsBuilder()
+	tileSheet := NewInternalSheet()
 
 	// FONTS
 	face := getFontFace(18)
@@ -74,9 +73,13 @@ func SetDefaultTheme() {
 
 	theme := &Theme{
 		PanelTheme: &PanelTheme{
-			ForegroundImage: NewNineSliceRounded(cSurfacePanelFg, 5),
+			ForegroundImage: image.NewNineSlice(
+				tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButton),
+				[3]int{23, 1, 23},
+				[3]int{23, 1, 23},
+			),
 			BackgroundImage: NewNineSliceRounded(cSurfacePanelBg, 5),
-			Padding:         &widget.Insets{Left: 10, Right: 10, Top: 5, Bottom: 5},
+			Padding:         &widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8},
 			Spacing:         10,
 		},
 		Theme: &widget.Theme{
@@ -86,11 +89,23 @@ func SetDefaultTheme() {
 				TextColor: &widget.ButtonTextColor{Idle: cText},
 				TextFace:  face,
 				Image: &widget.ButtonImage{
-					Idle:    image.NewBorderedNineSliceColor(cBtnIdleFill, cBtnIdleBorder, borderSize),
-					Hover:   image.NewBorderedNineSliceColor(cBtnHoverFill, cBtnIdleFill, borderSize),
-					Pressed: image.NewBorderedNineSliceColor(cBtnPressedFill, cBtnHoverFill, borderSize),
+					Idle: image.NewNineSlice(
+						tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButton),
+						[3]int{23, 1, 23},
+						[3]int{23, 1, 23},
+					),
+					Hover: image.NewNineSlice(
+						tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButtonHover),
+						[3]int{23, 1, 23},
+						[3]int{23, 1, 23},
+					),
+					Pressed: image.NewNineSlice(
+						tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButtonPressed),
+						[3]int{23, 1, 23},
+						[3]int{23, 1, 23},
+					),
 				},
-				TextPadding: &widget.Insets{Left: 10, Right: 10, Top: 5, Bottom: 5},
+				TextPadding: &widget.Insets{Left: 15, Right: 15, Top: 5, Bottom: 5},
 				TextPosition: &widget.TextPositioning{
 					VTextPosition: widget.TextPositionCenter,
 					HTextPosition: widget.TextPositionCenter,
@@ -218,7 +233,21 @@ func SetDefaultTheme() {
 				Image: getCheckboxImage(),
 			},
 		},
-		Icons: iconsBuilder.GetIcons(1, nil),
+		Icons: Icons{
+			IconBarDelete: tileSheet.GetTile(TileBarDelete),
+			IconDelete:    tileSheet.GetTile(TileDelete),
+			IconGear:      tileSheet.GetTile(TileGear),
+			IconMinus:     tileSheet.GetTile(TileMinus),
+			IconPause:     tileSheet.GetTile(TilePause),
+			IconPlay:      tileSheet.GetTile(TilePlay),
+			IconBarAdd:    tileSheet.GetTile(TileBarAdd),
+			IconPlus:      tileSheet.GetTile(TilePlus),
+			IconRecord:    tileSheet.GetTile(TileRecord),
+			IconStop:      tileSheet.GetTile(TileStop),
+			IconButton:    tileSheet.GetTile(TileButton),
+			IconLed:       tileSheet.GetTile(TileLed),
+			IconNone:      nil,
+		},
 		IconSizes: IconSizes{
 			IconSizeSmall:  16,
 			IconSizeMedium: 24,

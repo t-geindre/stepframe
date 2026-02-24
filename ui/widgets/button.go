@@ -9,8 +9,8 @@ import (
 
 type Button struct {
 	*container.Row
-	hover bool
-	click func()
+	hover, pressed bool
+	click          func()
 }
 
 func NewButton(click func()) *Button {
@@ -62,10 +62,12 @@ func (b *Button) onCursorExit(any) {
 
 func (b *Button) onPress(any) {
 	b.Row.SetBackgroundImage(theme.Current.ButtonTheme.Image.Pressed)
+	b.pressed = true
 }
 
 func (b *Button) onRelease(any) {
-	if b.hover {
+	if b.hover && b.pressed {
+		b.pressed = false
 		b.Row.SetBackgroundImage(theme.Current.ButtonTheme.Image.Hover)
 		if b.click != nil {
 			b.click()

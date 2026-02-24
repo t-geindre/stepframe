@@ -96,36 +96,62 @@ func getComboListButtonImage(bgCol, borderCol, arrowCol color.Color) *image.Nine
 
 	return image.NewNineSlice(i, ws, hs)
 }
-
 func NewNineSliceRounded(col color.Color, radius int) *image.NineSlice {
-	if radius <= 0 {
-		img := ebiten.NewImage(1, 1)
-		img.Fill(col)
-		return image.NewNineSlice(img, [3]int{0, 1, 0}, [3]int{0, 1, 0})
-	}
+	return NewNineSliceRoundedBordered(col, col, radius, 0)
+}
 
+func NewNineSliceRoundedBordered(fillCol, borderCol color.Color, radius, borderWidth int) *image.NineSlice {
 	size := 2*radius + 1
 	img := ebiten.NewImage(size, size)
 
-	vector.FillRect(img,
-		float32(radius), 0,
-		float32(size-2*radius), float32(size),
-		col, true,
-	)
-	vector.FillRect(img,
-		0, float32(radius),
-		float32(size), float32(size-2*radius),
-		col, true,
-	)
+	if borderWidth <= 0 {
+		drawRoundedRect(img, 0, 0, float32(size), float32(size), float32(radius), fillCol)
+		return image.NewNineSlice(img, [3]int{radius, 1, radius}, [3]int{radius, 1, radius})
+	}
 
-	r := float32(radius)
-	max := float32(size - 1)
+	// Outer rounded rect = border
+	drawRoundedRect(img, 0, 0, float32(size), float32(size), float32(radius), borderCol)
 
-	vector.FillCircle(img, r, r, r, col, true)         // top-left
-	vector.FillCircle(img, max-r, r, r, col, true)     // top-right
-	vector.FillCircle(img, r, max-r, r, col, true)     // bottom-left
-	vector.FillCircle(img, max-r, max-r, r, col, true) // bottom-right
+	// Inner rounded rect = fill, inset by borderWidth
+	in := float32(borderWidth)
+	innerW := float32(size) - 2*in
+	innerH := float32(size) - 2*in
+	if innerW > 0 && innerH > 0 {
+		innerR := float32(radius - borderWidth)
+		if innerR < 0 {
+			innerR = 0
+		}
+		drawRoundedRect(img, in, in, innerW, innerH, innerR, fillCol)
+	}
 
-	// 9-slice bands: corners fixed (radius), center stretch (1px)
 	return image.NewNineSlice(img, [3]int{radius, 1, radius}, [3]int{radius, 1, radius})
+}
+
+func drawRoundedRect(img *ebiten.Image, x, y, w, h float32, r float32, col color.Color) {
+	if w <= 0 || h <= 0 {
+		return
+	}
+	if r <= 0 {
+		vector.FillRect(img, x, y, w, h, col, true)
+		return
+	}
+
+	// Clamp radius so it never exceeds half the size.
+	maxR := w / 2
+	if h/2 < maxR {
+		maxR = h / 2
+	}
+	if r > maxR {
+		r = maxR
+	}
+
+	// Cross (two rectangles)
+	vector.FillRect(img, x+r, y, w-2*r, h, col, true)
+	vector.FillRect(img, x, y+r, w, h-2*r, col, true)
+
+	// Four corners (circles)
+	vector.FillCircle(img, x+r, y+r, r, col, true)     // top-left
+	vector.FillCircle(img, x+w-r, y+r, r, col, true)   // top-right
+	vector.FillCircle(img, x+r, y+h-r, r, col, true)   // bottom-left
+	vector.FillCircle(img, x+w-r, y+h-r, r, col, true) // bottom-right
 }

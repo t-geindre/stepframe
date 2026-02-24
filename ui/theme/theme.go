@@ -6,6 +6,7 @@ import (
 
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
@@ -45,3 +46,43 @@ type PlayTheme struct {
 	PulseStrength float64
 	PulseDuration time.Duration
 }
+
+type Icons map[Icon]*ebiten.Image
+type Icon int
+
+const (
+	IconBarDelete Icon = iota
+	IconDelete
+	IconGear
+	IconMinus
+	IconPause
+	IconPlay
+	IconBarAdd
+	IconPlus
+	IconRecord
+	IconStop
+	IconButton
+	IconLed
+	IconNone
+)
+
+type IconSize int
+type IconSizes map[IconSize]int
+
+const (
+	IconSizeSmall IconSize = iota
+	IconSizeMedium
+	IconSizeLarge
+)
+
+type IconColor int
+type IconColors map[IconColor]color.Color
+
+const (
+	IconColorOn IconColor = iota
+	IconColorOff
+	IconColorIdle
+	IconColorArmed
+	IconColorDefault
+	IconColorNone
+)
