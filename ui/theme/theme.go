@@ -18,7 +18,6 @@ type Theme struct {
 	Icons           Icons
 	IconSizes       IconSizes
 	IconColors      IconColors
-	PlayTheme       *PlayTheme
 	LedTheme        *LedTheme
 	BackgroundTheme *BackgroundTheme
 	TrackTheme      *TrackTheme
@@ -34,16 +33,6 @@ type PanelTheme struct {
 	BackgroundImage *image.NineSlice
 	Padding         *widget.Insets
 	Spacing         int
-}
-
-type PlayTheme struct {
-	Playing       *image.NineSlice
-	Stopped       *image.NineSlice
-	Armed         *image.NineSlice
-	None          *image.NineSlice
-	Pulse         *image.NineSlice
-	PulseStrength float64
-	PulseDuration time.Duration
 }
 
 type LedTheme struct {
