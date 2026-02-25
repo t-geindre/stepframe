@@ -18,24 +18,16 @@ type Theme struct {
 	Icons           Icons
 	IconSizes       IconSizes
 	IconColors      IconColors
-	MainMenuTheme   *MainMenuTheme
 	PlayTheme       *PlayTheme
 	LedTheme        *LedTheme
 	BackgroundTheme *BackgroundTheme
+	TrackTheme      *TrackTheme
 }
 
 type BackgroundTheme struct {
 	GradientTop    color.Color
 	GradientBottom color.Color
 	Padding        *widget.Insets
-}
-
-type MainMenuTheme struct {
-	ButtonImage   *widget.ButtonImage
-	ButtonPadding *widget.Insets
-	IconSpacing   int
-	Font          *text.Face
-	TextColor     color.Color
 }
 
 type PanelTheme struct {
@@ -60,6 +52,14 @@ type LedTheme struct {
 	OffsetX, OffsetY int
 	Width, Height    int
 	PulseDuration    time.Duration
+}
+
+type TrackTheme struct {
+	Id *TrackIdTheme
+}
+
+type TrackIdTheme struct {
+	Font *text.Face
 }
 
 type Icons map[Icon]*ebiten.Image

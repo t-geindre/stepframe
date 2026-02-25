@@ -20,25 +20,20 @@ type Track struct {
 func NewTrack(id int, sequencer *seq.Sequencer) *Track {
 	state := NewTrackState(id, sequencer)
 
-	left := widgets.NewLabel(fmt.Sprintf(" %02d", id+1))
-
-	right := container.NewRow().
-		SetDirection(widget.DirectionVertical).
-		SetSpacing(theme.Current.PanelTheme.Spacing).
-		SetContentStretch(true)
-
+	idLabel := widgets.NewLabel(fmt.Sprintf(" %02d", id+1))
+	idLabel.SetFont(theme.Current.TrackTheme.Id.Font)
+	
 	commands := NewTrackCommands(state)
 	bars := NewTrackBars()
-	right.AddChild(commands, bars)
 
 	cont := container.NewGrid().
-		SetColumns(2).
-		SetStretch([]bool{false, true}, []bool{true}).
+		SetColumns(3).
+		SetStretch([]bool{false, false, true}, []bool{true}).
 		SetSpacing(theme.Current.PanelTheme.Spacing, theme.Current.PanelTheme.Spacing).
 		SetPadding(theme.Current.PanelTheme.Padding).
 		SetBackgroundImage(theme.Current.PanelTheme.BackgroundImage)
 
-	cont.AddChild(left, right)
+	cont.AddChild(idLabel, commands, bars)
 
 	t := &Track{
 		Containerer: cont,

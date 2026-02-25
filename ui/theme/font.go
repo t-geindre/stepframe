@@ -3,6 +3,7 @@ package theme
 import (
 	"bytes"
 	_ "embed"
+	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
@@ -12,8 +13,23 @@ import (
 //go:embed font.ttf
 var fontSrc []byte
 
-func getFontFace(size float64) *text.Face {
-	src, err := text.NewGoTextFaceSource(bytes.NewReader(fontSrc))
+//go:embed font-bold.ttf
+var fontBoldSrc []byte
+
+var fontCache = make(map[string]*text.Face)
+
+func getFontFace(size float64, bold bool) *text.Face {
+	key := strconv.Itoa(int(size)) + "_" + strconv.FormatBool(bold)
+	if face, ok := fontCache[key]; ok {
+		return face
+	}
+
+	ftSrc := fontSrc
+	if bold {
+		ftSrc = fontBoldSrc
+	}
+
+	src, err := text.NewGoTextFaceSource(bytes.NewReader(ftSrc))
 	if err != nil {
 		panic(err)
 	}
@@ -23,6 +39,8 @@ func getFontFace(size float64) *text.Face {
 		Source: src,
 		Size:   size,
 	}
+
+	fontCache[key] = &face
 
 	return &face
 }

@@ -67,8 +67,7 @@ func SetDefaultTheme() {
 	tileSheet := NewInternalSheet()
 
 	// FONTS
-	face := getFontFace(18)
-	menuFace := getFontFace(18)
+	face := getFontFace(18, false)
 
 	theme := &Theme{
 		BackgroundTheme: &BackgroundTheme{
@@ -263,16 +262,6 @@ func SetDefaultTheme() {
 			IconColorArmed:   colornames.Yellow,
 			IconColorDefault: colornames.White,
 		},
-		MainMenuTheme: &MainMenuTheme{
-			ButtonImage: &widget.ButtonImage{
-				Idle:  image.NewNineSliceColor(cBtnIdleFill),
-				Hover: image.NewNineSliceColor(cBtnHoverFill),
-			},
-			ButtonPadding: &widget.Insets{Left: 10, Right: 10, Top: 5, Bottom: 5},
-			IconSpacing:   5,
-			Font:          menuFace,
-			TextColor:     cText,
-		},
 		PlayTheme: &PlayTheme{
 			Playing:       NewNineSliceRounded(cPlayPlaying, 10),
 			Stopped:       NewNineSliceRounded(cPlayStopped, 10),
@@ -290,6 +279,11 @@ func SetDefaultTheme() {
 			Width:         16,
 			Height:        16,
 			PulseDuration: 300 * time.Millisecond,
+		},
+		TrackTheme: &TrackTheme{
+			Id: &TrackIdTheme{
+				Font: getFontFace(18, true),
+			},
 		},
 	}
 

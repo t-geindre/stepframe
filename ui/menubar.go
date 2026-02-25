@@ -14,7 +14,7 @@ type TopBar struct {
 	beatLed *widgets.Led
 
 	playIcon  *widgets.Icon
-	playLabel *widget.Text
+	playLabel *widgets.Label
 	playing   bool
 }
 
