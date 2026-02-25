@@ -67,45 +67,52 @@ func (s *Sequencer) run(ctx context.Context) {
 			return
 		case cmd := <-s.async.Commands():
 			s.onCommand(cmd)
-		case ev := <-s.receiver.Events():
-			s.onMidiEvent(ev)
 		case tick := <-s.clock.Ticks():
 			s.onTick(tick)
 		}
 	}
 }
 
-func (s *Sequencer) onMidiEvent(ev midi.Event) {
-	if s.forwardInOut && ev.Id == midi.EvMessage {
-		s.sender.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: ev.Msg})
+func (s *Sequencer) drainMidiEvents() []midi.Event {
+	evs := make([]midi.Event, 0, 16)
+	for i := 0; i < 16; i++ { // drain up to 16 events at once
+		select {
+		case ev := <-s.receiver.Events():
+			evs = append(evs, ev)
+		default:
+			return evs
+		}
 	}
-
-	if !s.playIfRequired(true) {
-		return
-	}
-
-	for _, t := range s.tracks {
-		t.AddEvent(s.time.Now(), ev.Msg)
-	}
+	return evs
 }
 
 func (s *Sequencer) onTick(tick clock.Tick) {
 	s.time.Tick(tick.N)
 
-	if !s.playIfRequired(false) {
+	midiEvents := s.drainMidiEvents()
+	isPlaying := s.playIfRequired(len(midiEvents) > 0)
+
+	if !isPlaying {
 		return
 	}
 
-	now := s.time.Now()
-
 	for _, t := range s.tracks {
-		for _, m := range t.PollDue(now) {
+		for _, m := range t.PollDue(s.time.Now()) {
 			s.sender.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: m})
 		}
 	}
 
 	if s.time.IsBeat(s.clock.GetTicksPerQuarter()) {
 		s.async.TryDispatch(Event{Id: EvBeat})
+	}
+
+	for _, ev := range midiEvents {
+		if s.forwardInOut && ev.Id == midi.EvMessage {
+			s.sender.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: ev.Msg})
+		}
+		for _, t := range s.tracks {
+			t.AddEvent(s.time.Now(), ev.Msg)
+		}
 	}
 }
 
@@ -209,10 +216,12 @@ func (s *Sequencer) playIfRequired(hasReceivedEvent bool) bool {
 		return true
 	}
 
-	for _, t := range s.tracks {
-		if hasReceivedEvent && t.scheduledState == TrackStateRecording {
-			s.play()
-			return true
+	if hasReceivedEvent {
+		for _, t := range s.tracks {
+			if t.scheduledState == TrackStateRecording {
+				s.play()
+				return true
+			}
 		}
 	}
 
