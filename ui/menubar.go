@@ -101,7 +101,9 @@ func (t *TopBar) getBox() widget.Containerer {
 		SetBackgroundImage(theme.Current.PanelTheme.BackgroundImage).
 		SetPadding(theme.Current.PanelTheme.Padding).
 		SetSpacing(theme.Current.PanelTheme.Spacing).
-		SetContentStretch(true)
+		SetContentStretch(true).
+		SetContentPosition(widget.RowLayoutPositionCenter)
+
 }
 
 func (t *TopBar) SetStopped(pause bool) {

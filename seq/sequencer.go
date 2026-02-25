@@ -93,6 +93,11 @@ func (s *Sequencer) onTick(tick clock.Tick) {
 	isPlaying := s.playIfRequired(len(midiEvents) > 0)
 
 	if !isPlaying {
+		for _, ev := range midiEvents {
+			if s.forwardInOut && ev.Id == midi.EvMessage {
+				s.sender.TryCommand(midi.Command{Id: midi.CmdMessage, Msg: ev.Msg})
+			}
+		}
 		return
 	}
 

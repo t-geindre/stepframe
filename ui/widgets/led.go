@@ -37,17 +37,19 @@ func (l *Led) Validate() {
 }
 
 func (l *Led) Render(screen *ebiten.Image) {
-	opt := &ebiten.DrawImageOptions{}
-	opt.GeoM.Translate(
-		float64(l.Widget.Rect.Min.X+theme.Current.LedTheme.OffsetX),
-		float64(l.Widget.Rect.Min.Y+theme.Current.LedTheme.OffsetY),
-	)
-	opt.ColorScale.ScaleWithColor(l.color)
-
 	img := theme.Current.LedTheme.OnImage
 	if !l.isOn {
 		img = theme.Current.LedTheme.OffImage
 	}
+
+	rect := l.GetWidget().Rect
+	tsx := float64(rect.Min.X + rect.Dx()/2 - img.Bounds().Dx()/2)
+	tsy := float64(rect.Min.Y + rect.Dy()/2 - img.Bounds().Dy()/2)
+
+	opt := &ebiten.DrawImageOptions{}
+	opt.GeoM.Translate(tsx, tsy)
+	opt.ColorScale.ScaleWithColor(l.color)
+
 	screen.DrawImage(img, opt)
 
 	if l.pulseColor == nil || l.lastPulse.IsZero() {
@@ -64,10 +66,7 @@ func (l *Led) Render(screen *ebiten.Image) {
 	t = t * t
 
 	pulseOpt := &ebiten.DrawImageOptions{}
-	pulseOpt.GeoM.Translate(
-		float64(l.Widget.Rect.Min.X+theme.Current.LedTheme.OffsetX),
-		float64(l.Widget.Rect.Min.Y+theme.Current.LedTheme.OffsetY),
-	)
+	pulseOpt.GeoM.Translate(tsx, tsy)
 	pulseOpt.ColorScale.ScaleWithColor(l.pulseColor)
 	pulseOpt.ColorScale.ScaleAlpha(float32(t))
 

@@ -98,11 +98,9 @@ func SetDefaultTheme() {
 		LedTheme: &LedTheme{
 			OnImage:       tileSheet.GetTile(TileLedOn),
 			OffImage:      tileSheet.GetTile(TileLedOff),
-			OffsetX:       -24,
-			OffsetY:       -24,
 			Width:         16,
 			Height:        16,
-			PulseDuration: 300 * time.Millisecond,
+			PulseDuration: 350 * time.Millisecond,
 		},
 		TrackTheme: &TrackTheme{
 			Id: &TrackIdTheme{

@@ -35,11 +35,10 @@ type PanelTheme struct {
 }
 
 type LedTheme struct {
-	OnImage          *ebiten.Image
-	OffImage         *ebiten.Image
-	OffsetX, OffsetY int
-	Width, Height    int
-	PulseDuration    time.Duration
+	OnImage       *ebiten.Image
+	OffImage      *ebiten.Image
+	Width, Height int
+	PulseDuration time.Duration
 }
 
 type TrackTheme struct {
