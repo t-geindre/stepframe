@@ -46,7 +46,7 @@ func (w *Window) WithTitleBar(icon theme.Icon, title string) *Window {
 	header := container.NewRow().
 		SetPadding(theme.Current.PanelTheme.Padding).
 		SetSpacing(theme.Current.PanelTheme.Spacing).
-		SetBackgroundImage(theme.Current.PanelTheme.ForegroundImage)
+		SetBackgroundImage(theme.Current.PanelTheme.BackgroundImage)
 
 	if icon != theme.IconNone {
 		header.AddChild(NewIcon(icon, theme.IconSizeMedium))

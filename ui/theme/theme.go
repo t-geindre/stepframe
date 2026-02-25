@@ -33,7 +33,6 @@ type MainMenuTheme struct {
 
 type PanelTheme struct {
 	BackgroundImage *image.NineSlice
-	ForegroundImage *image.NineSlice
 	Padding         *widget.Insets
 	Spacing         int
 }

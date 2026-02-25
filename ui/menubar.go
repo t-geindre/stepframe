@@ -97,7 +97,7 @@ func (t *TopBar) HandleEvent(event seq.Event) {
 
 func (t *TopBar) getBox() widget.Containerer {
 	return container.NewRow().
-		SetBackgroundImage(theme.Current.PanelTheme.ForegroundImage).
+		SetBackgroundImage(theme.Current.PanelTheme.BackgroundImage).
 		SetPadding(theme.Current.PanelTheme.Padding).
 		SetSpacing(theme.Current.PanelTheme.Spacing).
 		SetContentStretch(true)

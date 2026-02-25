@@ -21,7 +21,6 @@ func SetDefaultTheme() {
 	cTextDisabled := color.NRGBA{122, 122, 122, 255}
 
 	// Surfaces
-	cSurfacePanelBg := color.RGBA{R: 0x21, G: 0x21, B: 0x21, A: 0xff}
 	cSurfaceTabBg := color.NRGBA{32, 32, 32, 255}
 	cSurfaceListSelected := color.NRGBA{40, 40, 40, 255}
 	cSurfaceListSelectedFocused := color.NRGBA{50, 50, 50, 255}
@@ -73,14 +72,13 @@ func SetDefaultTheme() {
 
 	theme := &Theme{
 		PanelTheme: &PanelTheme{
-			ForegroundImage: image.NewNineSlice(
+			BackgroundImage: image.NewNineSlice(
 				tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButton),
 				[3]int{23, 1, 23},
 				[3]int{23, 1, 23},
 			),
-			BackgroundImage: NewNineSliceRounded(cSurfacePanelBg, 5),
-			Padding:         &widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8},
-			Spacing:         10,
+			Padding: &widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8},
+			Spacing: 10,
 		},
 		Theme: &widget.Theme{
 			DefaultFace:      face,
