@@ -22,7 +22,7 @@ func NewTrack(id int, sequencer *seq.Sequencer) *Track {
 
 	idLabel := widgets.NewLabel(fmt.Sprintf(" %02d", id+1))
 	idLabel.SetFont(theme.Current.TrackTheme.Id.Font)
-	
+
 	commands := NewTrackCommands(state)
 	bars := NewTrackBars()
 

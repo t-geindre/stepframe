@@ -10,7 +10,7 @@ import (
 )
 
 type TopBar struct {
-	widget.Containerer
+	*container.Anchor
 	beatLeds   []*widgets.Led
 	ledCurrent int
 	firstBeat  bool
@@ -21,12 +21,10 @@ type TopBar struct {
 }
 
 func NewTopBar(sequencer *seq.Sequencer) *TopBar {
-	t := &TopBar{Containerer: container.NewGrid().
-		SetColumns(5).
-		SetStretch([]bool{false, true, false, true, false}, []bool{false}).
-		SetSpacing(theme.Current.PanelTheme.Spacing, theme.Current.PanelTheme.Spacing).
-		SetBackgroundImage(theme.Current.PanelTheme.BackgroundImage).
-		SetPadding(theme.Current.PanelTheme.Padding),
+	t := &TopBar{
+		Anchor: container.NewAnchor().
+			SetBackgroundImage(theme.Current.PanelTheme.BackgroundImage).
+			SetPadding(theme.Current.PanelTheme.Padding),
 	}
 
 	// BPM LED todo BPB
@@ -35,15 +33,6 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 		t.beatLeds[i] = widgets.NewLed(true, theme.ColorIdle)
 		t.beatLeds[i].SetPulseColor(theme.ColorOn)
 	}
-
-	// Add track
-	addBtn := widgets.NewButton(func() {
-		sequencer.TryCommand(seq.Command{Id: seq.CmdNewTrack})
-	})
-	addBtn.AddChild(
-		widgets.NewIcon(theme.IconPlus, theme.IconSizeMedium),
-		widgets.NewLabel("Track"),
-	)
 
 	// Play button
 	t.playIcon = widgets.NewIcon(theme.IconPlay, theme.IconSizeMedium)
@@ -67,12 +56,20 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 
 	// Place widgets
 	left, center, right := t.getBox(), t.getBox(), t.getBox()
-	left.AddChild(addBtn, playButton, stopButton)
+	left.AddChild(playButton, stopButton)
 	for _, led := range t.beatLeds {
 		center.AddChild(led)
 	}
 	right.AddChild(widgets.NewLabel("BPM 120"), widgets.NewLabel("BPB 4"))
-	t.AddChild(left, t.getBox(), center, t.getBox(), right)
+
+	t.SetContentHorizontalPosition(widget.AnchorLayoutPositionStart)
+	t.AddChild(left)
+
+	t.SetContentHorizontalPosition(widget.AnchorLayoutPositionCenter)
+	t.AddChild(center)
+
+	t.SetContentHorizontalPosition(widget.AnchorLayoutPositionEnd)
+	t.AddChild(right)
 
 	// Initial state
 	t.SetStopped(false)
@@ -114,14 +111,14 @@ func (t *TopBar) SetStopped(pause bool) {
 	t.playing = false
 	t.playIcon.SetIcon(theme.IconPlay)
 	t.playLabel.Label = "Play"
-	t.Containerer.RequestRelayout()
+	t.Anchor.RequestRelayout()
 }
 
 func (t *TopBar) SetPlaying() {
 	t.playing = true
 	t.playIcon.SetIcon(theme.IconPause)
 	t.playLabel.Label = "Pause"
-	t.Containerer.RequestRelayout()
+	t.Anchor.RequestRelayout()
 }
 
 func (t *TopBar) OnBeat() {

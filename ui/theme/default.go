@@ -32,6 +32,15 @@ func SetDefaultTheme() {
 			Padding: &widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8},
 			Spacing: 10,
 		},
+		VirtualPanelTheme: &VirtualPanelTheme{
+			BackgroundImage: image.NewNineSlice(
+				tileSheet.GetTile(TileDashed),
+				[3]int{10, 44, 10},
+				[3]int{10, 44, 10},
+			),
+			Padding: &widget.Insets{Left: 10, Right: 10, Top: 10, Bottom: 10},
+			Spacing: 10,
+		},
 		Theme: &widget.Theme{
 			DefaultFace:      face,
 			DefaultTextColor: cText,

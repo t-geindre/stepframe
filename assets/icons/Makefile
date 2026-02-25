@@ -1,6 +1,6 @@
 SVG_DIR := src
 PNG_DIR := pngs
-SHEET   := ../../ui/theme/icons.png
+SHEET   := ../../ui/theme/sheet.png
 
 SIZE    := 64
 COLS    := 8

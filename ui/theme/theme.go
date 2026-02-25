@@ -15,6 +15,7 @@ var Current *Theme
 type Theme struct {
 	*widget.Theme
 	PanelTheme         *PanelTheme
+	VirtualPanelTheme  *VirtualPanelTheme
 	IconsTheme         *IconsTheme
 	LedTheme           *LedTheme
 	MainContainerTheme *MainContainerTheme
@@ -40,6 +41,12 @@ type LedTheme struct {
 	OffImage      *ebiten.Image
 	Width, Height int
 	PulseDuration time.Duration
+}
+
+type VirtualPanelTheme struct {
+	BackgroundImage *image.NineSlice
+	Padding         *widget.Insets
+	Spacing         int
 }
 
 type TrackTheme struct {

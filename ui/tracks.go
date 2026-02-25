@@ -4,6 +4,7 @@ import (
 	"stepframe/seq"
 	"stepframe/ui/container"
 	"stepframe/ui/theme"
+	"stepframe/ui/widgets"
 
 	"github.com/ebitenui/ebitenui/widget"
 	"github.com/rs/zerolog"
@@ -11,21 +12,41 @@ import (
 
 type Tracks struct {
 	*container.Row
-	tacks     map[int]*Track
-	sequencer *seq.Sequencer
-	logger    zerolog.Logger
+	tacks      map[int]*Track
+	sequencer  *seq.Sequencer
+	logger     zerolog.Logger
+	addBtnDown func()
 }
 
 func NewTracks(logger zerolog.Logger, sequencer *seq.Sequencer) *Tracks {
+	cont := container.NewRow().
+		SetDirection(widget.DirectionVertical).
+		SetContentPosition(widget.RowLayoutPositionStart).
+		SetSpacing(theme.Current.PanelTheme.Spacing).
+		SetContentStretch(true)
+
+	addTrackRow := container.NewRow().
+		SetBackgroundImage(theme.Current.VirtualPanelTheme.BackgroundImage).
+		SetPadding(theme.Current.VirtualPanelTheme.Padding)
+
+	addTrackBtn := widgets.NewButton(func() { sequencer.TryCommand(seq.Command{Id: seq.CmdNewTrack}) })
+	addTrackBtn.AddChild(widgets.NewIcon(theme.IconPlus, theme.IconSizeMedium))
+	addTrackBtn.AddChild(widgets.NewLabel("Add Track"))
+
+	addTrackRow.AddChild(addTrackBtn)
+	removeAddBtn := cont.AddChild(addTrackRow)
+
+	addBtnDown := func() {
+		removeAddBtn()
+		cont.AddChild(addTrackRow)
+	}
+
 	return &Tracks{
-		Row: container.NewRow().
-			SetDirection(widget.DirectionVertical).
-			SetContentPosition(widget.RowLayoutPositionStart).
-			SetSpacing(theme.Current.PanelTheme.Spacing).
-			SetContentStretch(true),
-		tacks:     make(map[int]*Track),
-		sequencer: sequencer,
-		logger:    logger.With().Str("component", "ui_tracks").Logger(),
+		Row:        cont,
+		tacks:      make(map[int]*Track),
+		sequencer:  sequencer,
+		logger:     logger.With().Str("component", "ui_tracks").Logger(),
+		addBtnDown: addBtnDown,
 	}
 }
 
@@ -53,6 +74,7 @@ func (t *Tracks) addTrack(id int) {
 	}
 	tr := NewTrack(id, t.sequencer)
 	t.Row.AddChild(tr)
+	t.addBtnDown()
 	t.tacks[id] = tr
 }
 

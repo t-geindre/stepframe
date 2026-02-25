@@ -12,7 +12,7 @@ import (
 
 // SRC: https://feathericons.com/ & https://iconoir.com/
 //
-//go:embed icons.png
+//go:embed sheet.png
 var sheet []byte
 
 type Tile int
@@ -31,6 +31,7 @@ const (
 	TileButtonHover
 	TileButton
 	TileButtonPressed
+	TileDashed
 	TileLedOn
 	TileLedOff
 )
@@ -51,8 +52,9 @@ var tileMap = TileMap{
 	TileButtonHover:   {2, 1},
 	TileButton:        {3, 1},
 	TileButtonPressed: {4, 1},
-	TileLedOn:         {5, 1},
-	TileLedOff:        {6, 1},
+	TileDashed:        {5, 1},
+	TileLedOn:         {6, 1},
+	TileLedOff:        {7, 1},
 }
 
 type Sheet struct {
