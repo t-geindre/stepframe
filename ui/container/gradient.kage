@@ -1,0 +1,29 @@
+//kage:unit pixels
+package renderer
+
+var TopColor vec4
+var BottomColor vec4
+
+func ign(p vec2) float {
+	return fract(52.9829189 * fract(0.06711056*p.x + 0.00583715*p.y))
+}
+
+func Fragment(dstPos vec4, srcPos vec2, color vec4) vec4 {
+	size := imageDstSize()
+	if size.y <= 0.0 {
+		return TopColor
+	}
+
+	t := clamp(srcPos.y/size.y, 0.0, 1.0)
+
+	topLin := pow(TopColor.rgb, vec3(2.2))
+	botLin := pow(BottomColor.rgb, vec3(2.2))
+
+	lin := topLin*(1.0-t) + botLin*t
+
+	n := ign(dstPos.xy) - 0.5
+	lin += n * (0.25 / 255.0)
+
+	rgb := pow(max(lin, vec3(0.0)), vec3(1.0/2.2))
+	return vec4(rgb, TopColor.a*(1.0-t)+BottomColor.a*t)
+}

@@ -39,7 +39,11 @@ func New(
 	ui := &Ui{
 		root: container.NewGrid().
 			SetColumns(1).
-			SetStretch([]bool{true}, []bool{false, true}),
+			SetStretch([]bool{true}, []bool{false, true}).
+			SetVerticalGradientBackground(
+				theme.Current.BackgroundTheme.GradientTop,
+				theme.Current.BackgroundTheme.GradientBottom,
+			),
 		clock:     &clock,
 		sequencer: sequencer,
 		sender:    sender,

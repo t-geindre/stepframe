@@ -14,13 +14,19 @@ var Current *Theme
 
 type Theme struct {
 	*widget.Theme
-	PanelTheme    *PanelTheme
-	Icons         Icons
-	IconSizes     IconSizes
-	IconColors    IconColors
-	MainMenuTheme *MainMenuTheme
-	PlayTheme     *PlayTheme
-	LedTheme      *LedTheme
+	PanelTheme      *PanelTheme
+	Icons           Icons
+	IconSizes       IconSizes
+	IconColors      IconColors
+	MainMenuTheme   *MainMenuTheme
+	PlayTheme       *PlayTheme
+	LedTheme        *LedTheme
+	BackgroundTheme *BackgroundTheme
+}
+
+type BackgroundTheme struct {
+	GradientTop    color.Color
+	GradientBottom color.Color
 }
 
 type MainMenuTheme struct {
