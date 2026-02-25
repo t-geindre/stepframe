@@ -24,8 +24,8 @@ type Icon struct {
 func NewIcon(icon theme.Icon, size theme.IconSize) *Icon {
 	i := &Icon{
 		Widget: widget.NewWidget(),
-		size:   theme.Current.IconSizes[size],
-		color:  theme.Current.IconColors[theme.IconColorDefault],
+		size:   theme.Current.IconsTheme.Sizes[size],
+		color:  theme.Current.Colors[theme.IconColorDefault],
 	}
 	i.SetIcon(icon)
 	return i
@@ -34,21 +34,21 @@ func NewIcon(icon theme.Icon, size theme.IconSize) *Icon {
 func (i *Icon) Pulse() { i.lastPulse = time.Now() }
 
 func (i *Icon) SetSize(size theme.IconSize) {
-	i.size = theme.Current.IconSizes[size]
+	i.size = theme.Current.IconsTheme.Sizes[size]
 	i.scale()
 }
 
-func (i *Icon) SetColor(c theme.IconColor) {
-	i.color = theme.Current.IconColors[c]
+func (i *Icon) SetColor(c theme.Color) {
+	i.color = theme.Current.Colors[c]
 	// pas besoin de re-scale pour la couleur, mais ok si tu veux
 }
 
-func (i *Icon) SetPulseColor(c theme.IconColor) {
-	i.pulseColor = theme.Current.IconColors[c]
+func (i *Icon) SetPulseColor(c theme.Color) {
+	i.pulseColor = theme.Current.Colors[c]
 }
 
 func (i *Icon) SetIcon(icon theme.Icon) {
-	i.icon = theme.Current.Icons[icon]
+	i.icon = theme.Current.IconsTheme.Icons[icon]
 	i.scale()
 }
 

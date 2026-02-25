@@ -55,7 +55,7 @@ func (w *Window) WithTitleBar(icon theme.Icon, title string) *Window {
 
 	w.options = append(w.options, widget.WindowOpts.TitleBar(
 		header,
-		theme.Current.IconSizes[theme.IconSizeMedium]+ // Optimistic guess of title bar height
+		theme.Current.IconsTheme.Sizes[theme.IconSizeMedium]+ // Optimistic guess of title bar height
 			theme.Current.PanelTheme.Padding.Top+
 			theme.Current.PanelTheme.Padding.Bottom,
 	))

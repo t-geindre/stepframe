@@ -15,12 +15,11 @@ var Current *Theme
 type Theme struct {
 	*widget.Theme
 	PanelTheme      *PanelTheme
-	Icons           Icons
-	IconSizes       IconSizes
-	IconColors      IconColors
+	IconsTheme      *IconsTheme
 	LedTheme        *LedTheme
 	BackgroundTheme *BackgroundTheme
 	TrackTheme      *TrackTheme
+	Colors          ColorTheme
 }
 
 type BackgroundTheme struct {
@@ -51,8 +50,14 @@ type TrackIdTheme struct {
 	Font *text.Face
 }
 
-type Icons map[Icon]*ebiten.Image
+// ICONS
+
 type Icon int
+type IconSize int
+type IconsTheme struct {
+	Icons map[Icon]*ebiten.Image
+	Sizes map[IconSize]int
+}
 
 const (
 	IconBarDelete Icon = iota
@@ -65,13 +70,8 @@ const (
 	IconPlus
 	IconRecord
 	IconStop
-	IconButton
-	IconLed
 	IconNone
 )
-
-type IconSize int
-type IconSizes map[IconSize]int
 
 const (
 	IconSizeSmall IconSize = iota
@@ -79,14 +79,16 @@ const (
 	IconSizeLarge
 )
 
-type IconColor int
-type IconColors map[IconColor]color.Color
+// COLORS SET
+
+type Color int
+type ColorTheme map[Color]color.Color
 
 const (
-	IconColorOn IconColor = iota
-	IconColorOff
-	IconColorIdle
-	IconColorArmed
+	ColorOn Color = iota
+	ColorOff
+	ColorIdle
+	ColorArmed
 	IconColorDefault
-	IconColorNone
+	ColorNone
 )

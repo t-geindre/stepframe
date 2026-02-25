@@ -7,6 +7,7 @@ import (
 
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
+	"github.com/hajimehoshi/ebiten/v2"
 	"golang.org/x/image/colornames"
 )
 
@@ -68,32 +69,31 @@ func SetDefaultTheme() {
 				},
 			},
 		},
-		Icons: Icons{
-			IconBarDelete: tileSheet.GetTile(TileBarDelete),
-			IconDelete:    tileSheet.GetTile(TileDelete),
-			IconGear:      tileSheet.GetTile(TileGear),
-			IconMinus:     tileSheet.GetTile(TileMinus),
-			IconPause:     tileSheet.GetTile(TilePause),
-			IconPlay:      tileSheet.GetTile(TilePlay),
-			IconBarAdd:    tileSheet.GetTile(TileBarAdd),
-			IconPlus:      tileSheet.GetTile(TilePlus),
-			IconRecord:    tileSheet.GetTile(TileRecord),
-			IconStop:      tileSheet.GetTile(TileStop),
-			IconButton:    tileSheet.GetTile(TileButton),
-			IconLed:       tileSheet.GetTile(TileLedOff),
-			IconNone:      nil,
+		IconsTheme: &IconsTheme{
+			Icons: map[Icon]*ebiten.Image{
+				IconBarDelete: tileSheet.GetTile(TileBarDelete),
+				IconDelete:    tileSheet.GetTile(TileDelete),
+				IconGear:      tileSheet.GetTile(TileGear),
+				IconMinus:     tileSheet.GetTile(TileMinus),
+				IconPause:     tileSheet.GetTile(TilePause),
+				IconPlay:      tileSheet.GetTile(TilePlay),
+				IconBarAdd:    tileSheet.GetTile(TileBarAdd),
+				IconPlus:      tileSheet.GetTile(TilePlus),
+				IconRecord:    tileSheet.GetTile(TileRecord),
+				IconStop:      tileSheet.GetTile(TileStop),
+			},
+			Sizes: map[IconSize]int{
+				IconSizeSmall:  16,
+				IconSizeMedium: 24,
+				IconSizeLarge:  32,
+			},
 		},
-		IconSizes: IconSizes{
-			IconSizeSmall:  16,
-			IconSizeMedium: 24,
-			IconSizeLarge:  32,
-		},
-		IconColors: IconColors{
-			IconColorIdle:    colornames.Red,
-			IconColorOn:      colornames.Lime,
-			IconColorOff:     colornames.Black,
-			IconColorArmed:   colornames.Yellow,
+		Colors: ColorTheme{
 			IconColorDefault: colornames.White,
+			ColorIdle:        colornames.Red,
+			ColorOn:          colornames.Lime,
+			ColorOff:         colornames.Black,
+			ColorArmed:       colornames.Yellow,
 		},
 		LedTheme: &LedTheme{
 			OnImage:       tileSheet.GetTile(TileLedOn),

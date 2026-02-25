@@ -16,10 +16,10 @@ type Led struct {
 	lastPulse         time.Time
 }
 
-func NewLed(isOn bool, color theme.IconColor) *Led {
+func NewLed(isOn bool, color theme.Color) *Led {
 	l := &Led{
 		Widget: widget.NewWidget(),
-		color:  theme.Current.IconColors[color],
+		color:  theme.Current.Colors[color],
 		isOn:   isOn,
 	}
 	return l
@@ -74,12 +74,12 @@ func (l *Led) Render(screen *ebiten.Image) {
 	screen.DrawImage(theme.Current.LedTheme.OnImage, pulseOpt)
 }
 
-func (l *Led) SetPulseColor(color theme.IconColor) {
-	l.pulseColor = theme.Current.IconColors[color]
+func (l *Led) SetPulseColor(color theme.Color) {
+	l.pulseColor = theme.Current.Colors[color]
 }
 
-func (l *Led) SetColor(color theme.IconColor) {
-	l.color = theme.Current.IconColors[color]
+func (l *Led) SetColor(color theme.Color) {
+	l.color = theme.Current.Colors[color]
 }
 
 func (l *Led) Pulse() {

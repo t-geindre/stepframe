@@ -22,13 +22,13 @@ func NewTrackCommands(state *TrackState) *TrackCommands {
 	// Play button
 	playBtn := widgets.NewButton(state.TogglePlay)
 	tc.playIcon = widgets.NewIcon(theme.IconPlay, theme.IconSizeMedium)
-	tc.playPulse = widgets.NewLed(true, theme.IconColorNone)
+	tc.playPulse = widgets.NewLed(true, theme.ColorNone)
 	playBtn.AddChild(tc.playIcon, tc.playPulse)
 
 	// Record button
 	recordBtn := widgets.NewButton(state.ToggleRecord)
 	recordIcon := widgets.NewIcon(theme.IconRecord, theme.IconSizeMedium)
-	tc.recordPulse = widgets.NewLed(true, theme.IconColorNone)
+	tc.recordPulse = widgets.NewLed(true, theme.ColorNone)
 	recordBtn.AddChild(recordIcon, tc.recordPulse)
 
 	// Delete button
@@ -93,26 +93,26 @@ func (tc *TrackCommands) applyVisualState() {
 	tc.playPulse.SetPulseColor(theme.IconColorDefault)
 	switch {
 	case tc.state.armed == ArmStop:
-		tc.playPulse.SetColor(theme.IconColorArmed)
+		tc.playPulse.SetColor(theme.ColorArmed)
 	case playing:
-		tc.playPulse.SetColor(theme.IconColorOn)
+		tc.playPulse.SetColor(theme.ColorOn)
 	case tc.state.armed == ArmPlay || tc.state.armed == ArmRecord:
-		tc.playPulse.SetColor(theme.IconColorArmed)
+		tc.playPulse.SetColor(theme.ColorArmed)
 	default:
-		tc.playPulse.SetColor(theme.IconColorIdle)
-		tc.playPulse.SetPulseColor(theme.IconColorNone)
+		tc.playPulse.SetColor(theme.ColorIdle)
+		tc.playPulse.SetPulseColor(theme.ColorNone)
 	}
 
 	tc.recordPulse.SetPulseColor(theme.IconColorDefault)
 	switch {
 	case tc.state.armed == ArmRecord:
-		tc.recordPulse.SetColor(theme.IconColorArmed)
+		tc.recordPulse.SetColor(theme.ColorArmed)
 	case tc.state.armed == ArmStop && recording:
-		tc.recordPulse.SetColor(theme.IconColorArmed)
+		tc.recordPulse.SetColor(theme.ColorArmed)
 	case recording:
-		tc.recordPulse.SetColor(theme.IconColorOn)
+		tc.recordPulse.SetColor(theme.ColorOn)
 	default:
-		tc.recordPulse.SetColor(theme.IconColorIdle)
-		tc.recordPulse.SetPulseColor(theme.IconColorNone)
+		tc.recordPulse.SetColor(theme.ColorIdle)
+		tc.recordPulse.SetPulseColor(theme.ColorNone)
 	}
 }

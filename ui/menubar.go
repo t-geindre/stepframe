@@ -27,7 +27,7 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 	}
 
 	// BPM LED
-	t.beatLed = widgets.NewLed(true, theme.IconColorIdle)
+	t.beatLed = widgets.NewLed(true, theme.ColorIdle)
 	t.beatLed.SetPulseColor(theme.IconColorDefault)
 
 	// Add track
@@ -78,16 +78,16 @@ func (t *TopBar) HandleEvent(event seq.Event) {
 		t.beatLed.Pulse()
 	case seq.EvPaused, seq.EvStopped:
 		if event.Id == seq.EvPaused {
-			t.beatLed.SetColor(theme.IconColorArmed)
+			t.beatLed.SetColor(theme.ColorArmed)
 		} else {
-			t.beatLed.SetColor(theme.IconColorIdle)
+			t.beatLed.SetColor(theme.ColorIdle)
 		}
 		t.playing = false
 		t.playIcon.SetIcon(theme.IconPlay)
 		t.playLabel.Label = "Play"
 		t.Containerer.RequestRelayout()
 	case seq.EvPlaying:
-		t.beatLed.SetColor(theme.IconColorOn)
+		t.beatLed.SetColor(theme.ColorOn)
 		t.playing = true
 		t.playIcon.SetIcon(theme.IconPause)
 		t.playLabel.Label = "Pause"
