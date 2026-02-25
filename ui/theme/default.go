@@ -74,6 +74,7 @@ func SetDefaultTheme() {
 		BackgroundTheme: &BackgroundTheme{
 			GradientTop:    color.RGBA{R: 0x22, G: 0x25, B: 0x2b, A: 255},
 			GradientBottom: color.RGBA{R: 0x0f, G: 0x11, B: 0x15, A: 255},
+			Padding:        widget.NewInsetsSimple(30),
 		},
 		PanelTheme: &PanelTheme{
 			BackgroundImage: image.NewNineSlice(

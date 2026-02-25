@@ -27,6 +27,7 @@ type Theme struct {
 type BackgroundTheme struct {
 	GradientTop    color.Color
 	GradientBottom color.Color
+	Padding        *widget.Insets
 }
 
 type MainMenuTheme struct {

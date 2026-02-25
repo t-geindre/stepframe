@@ -43,7 +43,8 @@ func New(
 			SetVerticalGradientBackground(
 				theme.Current.BackgroundTheme.GradientTop,
 				theme.Current.BackgroundTheme.GradientBottom,
-			),
+			).
+			SetPadding(theme.Current.BackgroundTheme.Padding),
 		clock:     &clock,
 		sequencer: sequencer,
 		sender:    sender,
