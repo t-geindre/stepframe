@@ -21,7 +21,6 @@ func NewTracks(logger zerolog.Logger, sequencer *seq.Sequencer) *Tracks {
 		Row: container.NewRow().
 			SetDirection(widget.DirectionVertical).
 			SetContentPosition(widget.RowLayoutPositionStart).
-			SetPadding(theme.Current.PanelTheme.Padding).
 			SetSpacing(theme.Current.PanelTheme.Spacing).
 			SetContentStretch(true),
 		tacks:     make(map[int]*Track),

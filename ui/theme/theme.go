@@ -14,18 +14,19 @@ var Current *Theme
 
 type Theme struct {
 	*widget.Theme
-	PanelTheme      *PanelTheme
-	IconsTheme      *IconsTheme
-	LedTheme        *LedTheme
-	BackgroundTheme *BackgroundTheme
-	TrackTheme      *TrackTheme
-	Colors          ColorTheme
+	PanelTheme         *PanelTheme
+	IconsTheme         *IconsTheme
+	LedTheme           *LedTheme
+	MainContainerTheme *MainContainerTheme
+	TrackTheme         *TrackTheme
+	Colors             ColorTheme
 }
 
-type BackgroundTheme struct {
+type MainContainerTheme struct {
 	GradientTop    color.Color
 	GradientBottom color.Color
 	Padding        *widget.Insets
+	Spacing        int
 }
 
 type PanelTheme struct {

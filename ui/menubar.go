@@ -22,9 +22,10 @@ type TopBar struct {
 
 func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 	t := &TopBar{Containerer: container.NewGrid().
-		SetColumns(3).
-		SetStretch([]bool{false, true, false}, []bool{false}).
+		SetColumns(5).
+		SetStretch([]bool{false, true, false, true, false}, []bool{false}).
 		SetSpacing(theme.Current.PanelTheme.Spacing, theme.Current.PanelTheme.Spacing).
+		SetBackgroundImage(theme.Current.PanelTheme.BackgroundImage).
 		SetPadding(theme.Current.PanelTheme.Padding),
 	}
 
@@ -66,13 +67,12 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 
 	// Place widgets
 	left, center, right := t.getBox(), t.getBox(), t.getBox()
-	left.AddChild(addBtn)
-	center.AddChild(playButton, stopButton)
+	left.AddChild(addBtn, playButton, stopButton)
 	for _, led := range t.beatLeds {
 		center.AddChild(led)
 	}
 	right.AddChild(widgets.NewLabel("BPM 120"), widgets.NewLabel("BPB 4"))
-	t.AddChild(left, center, right)
+	t.AddChild(left, t.getBox(), center, t.getBox(), right)
 
 	// Initial state
 	t.SetStopped(false)
@@ -98,12 +98,9 @@ func (t *TopBar) HandleEvent(event seq.Event) {
 
 func (t *TopBar) getBox() widget.Containerer {
 	return container.NewRow().
-		SetBackgroundImage(theme.Current.PanelTheme.BackgroundImage).
-		SetPadding(theme.Current.PanelTheme.Padding).
 		SetSpacing(theme.Current.PanelTheme.Spacing).
 		SetContentStretch(true).
 		SetContentPosition(widget.RowLayoutPositionCenter)
-
 }
 
 func (t *TopBar) SetStopped(pause bool) {

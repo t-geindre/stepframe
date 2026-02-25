@@ -84,3 +84,14 @@ func (l *Led) SetColor(color theme.Color) {
 func (l *Led) Pulse() {
 	l.lastPulse = time.Now()
 }
+
+func smootherstep(t float64) float64 {
+	if t <= 0 {
+		return 0
+	}
+	if t >= 1 {
+		return 1
+	}
+	// 6t^5 - 15t^4 + 10t^3
+	return t * t * t * (t*(t*6-15) + 10)
+}

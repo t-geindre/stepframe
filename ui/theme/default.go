@@ -17,10 +17,11 @@ func SetDefaultTheme() {
 	face := getFontFace(18, false)
 
 	theme := &Theme{
-		BackgroundTheme: &BackgroundTheme{
+		MainContainerTheme: &MainContainerTheme{
 			GradientTop:    color.RGBA{R: 0x22, G: 0x25, B: 0x2b, A: 255},
 			GradientBottom: color.RGBA{R: 0x0f, G: 0x11, B: 0x15, A: 255},
 			Padding:        widget.NewInsetsSimple(30),
+			Spacing:        10,
 		},
 		PanelTheme: &PanelTheme{
 			BackgroundImage: image.NewNineSlice(

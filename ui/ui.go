@@ -41,10 +41,11 @@ func New(
 			SetColumns(1).
 			SetStretch([]bool{true}, []bool{false, true}).
 			SetVerticalGradientBackground(
-				theme.Current.BackgroundTheme.GradientTop,
-				theme.Current.BackgroundTheme.GradientBottom,
+				theme.Current.MainContainerTheme.GradientTop,
+				theme.Current.MainContainerTheme.GradientBottom,
 			).
-			SetPadding(theme.Current.BackgroundTheme.Padding),
+			SetPadding(theme.Current.MainContainerTheme.Padding).
+			SetSpacing(theme.Current.MainContainerTheme.Spacing, theme.Current.MainContainerTheme.Spacing),
 		clock:     &clock,
 		sequencer: sequencer,
 		sender:    sender,
