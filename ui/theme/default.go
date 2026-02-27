@@ -37,12 +37,12 @@ func SetDefaultTheme() {
 		),
 		BarContainerPanelTheme: panel.WithBackgroundImage(
 			NewSimpleOffsetImage(image.NewNineSlice(
-				tileSheet.GetTile(TileDropPanel), [3]int{10, 44, 10}, [3]int{10, 44, 10},
+				tileSheet.GetTile(TileBarContainerPanel), [3]int{10, 44, 10}, [3]int{10, 44, 10},
 			)),
 		),
 		BarPanelTheme: panel.WithBackgroundImage(&OffsetImage{
 			Image: image.NewNineSlice(
-				tileSheet.GetTile(TileShinyPanel), [3]int{21, 22, 21}, [3]int{21, 22, 21},
+				tileSheet.GetTile(TileBarPanel), [3]int{21, 22, 21}, [3]int{21, 22, 21},
 			),
 			Offset: NewOutsetsSimple(16),
 		}),

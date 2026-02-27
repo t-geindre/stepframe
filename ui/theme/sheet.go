@@ -32,33 +32,33 @@ const (
 	TileButton
 	TileButtonPressed
 	TileVirtualPanel
-	TileDropPanel
+	TileBarContainerPanel
 	TileLedOn
 	TileLedOff
-	TileShinyPanel
+	TileBarPanel
 )
 
 type TileMap map[Tile]struct{ x, y float64 }
 
 var tileMap = TileMap{
-	TileBarDelete:     {0, 0},
-	TileDelete:        {1, 0},
-	TileGear:          {2, 0},
-	TileMinus:         {3, 0},
-	TilePause:         {4, 0},
-	TilePlay:          {5, 0},
-	TileBarAdd:        {6, 0},
-	TilePlus:          {7, 0},
-	TileRecord:        {0, 1},
-	TileStop:          {1, 1},
-	TileButtonHover:   {2, 1},
-	TileButton:        {3, 1},
-	TileButtonPressed: {4, 1},
-	TileVirtualPanel:  {5, 1},
-	TileDropPanel:     {6, 1},
-	TileLedOn:         {7, 1},
-	TileLedOff:        {0, 2},
-	TileShinyPanel:    {1, 2},
+	TileBarDelete:         {0, 0},
+	TileDelete:            {1, 0},
+	TileGear:              {2, 0},
+	TileMinus:             {3, 0},
+	TilePause:             {4, 0},
+	TilePlay:              {5, 0},
+	TileBarAdd:            {6, 0},
+	TilePlus:              {7, 0},
+	TileRecord:            {0, 1},
+	TileStop:              {1, 1},
+	TileButtonHover:       {2, 1},
+	TileButton:            {3, 1},
+	TileButtonPressed:     {4, 1},
+	TileVirtualPanel:      {5, 1},
+	TileBarContainerPanel: {6, 1},
+	TileLedOn:             {7, 1},
+	TileLedOff:            {0, 2},
+	TileBarPanel:          {1, 2},
 }
 
 type Sheet struct {

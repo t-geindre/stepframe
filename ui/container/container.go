@@ -51,6 +51,10 @@ func (c *Container[T]) SetMinSize(width, height int) T {
 }
 
 func (c *Container[T]) Render(screen *ebiten.Image) {
+	if !c.GetWidget().IsVisible() {
+		return
+	}
+
 	c.Gradient.Render(screen)
 	c.OffsetBackground.Render(screen)
 	c.Container.Render(screen)
