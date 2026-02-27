@@ -1,6 +1,10 @@
 package container
 
-import "github.com/ebitenui/ebitenui/widget"
+import (
+	"stepframe/ui/theme"
+
+	"github.com/ebitenui/ebitenui/widget"
+)
 
 type Grid struct {
 	*Container[*Grid]
@@ -37,6 +41,12 @@ func (g *Grid) SetStretch(columns, rows []bool) *Grid {
 
 func (g *Grid) SetDefaultStretch(column, row bool) *Grid {
 	widget.GridLayoutOpts.DefaultStretch(column, row)(g.layout)
+	return g
+}
+
+func (g *Grid) SetTheme(th *theme.PanelTheme) *Grid {
+	g.SetPadding(th.Padding).SetSpacing(th.Spacing, th.Spacing)
+	g.Container.SetTheme(th)
 	return g
 }
 

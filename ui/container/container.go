@@ -1,6 +1,8 @@
 package container
 
 import (
+	"stepframe/ui/theme"
+
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -58,4 +60,13 @@ func (c *Container[T]) Render(screen *ebiten.Image) {
 	c.Gradient.Render(screen)
 	c.OffsetBackground.Render(screen)
 	c.Container.Render(screen)
+}
+
+func (c *Container[T]) SetTheme(th *theme.PanelTheme) T {
+	c.OffsetBackground.SetBackgroundOffsetImage(th.BackgroundImage)
+	c.OffsetBackground.SetColorizedBackgroundOffsetImage(th.BackgroundColorize)
+	c.OffsetBackground.SetPulseBackgroundOffsetImage(th.PulseBackgroundImage)
+	c.OffsetBackground.SetPulseColorizedBackgroundOffsetImage(th.PulseBackgroundColorize)
+	c.OffsetBackground.SetPulseDuration(th.PulseDuration)
+	return c.outer
 }

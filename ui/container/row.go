@@ -1,6 +1,10 @@
 package container
 
-import "github.com/ebitenui/ebitenui/widget"
+import (
+	"stepframe/ui/theme"
+
+	"github.com/ebitenui/ebitenui/widget"
+)
 
 type Row struct {
 	*Container[*Row]
@@ -16,17 +20,6 @@ func NewRow() *Row {
 	row.cPosition = widget.RowLayoutPositionCenter
 
 	return row
-}
-
-func (r *Row) AddChild(children ...widget.PreferredSizeLocateableWidget) widget.RemoveChildFunc {
-	for _, c := range children {
-		c.GetWidget().LayoutData = widget.RowLayoutData{
-			Position: r.cPosition,
-			Stretch:  r.cStretch,
-		}
-	}
-
-	return r.Container.AddChild(children...)
 }
 
 func (r *Row) SetDirection(d widget.Direction) *Row {
@@ -52,4 +45,21 @@ func (r *Row) SetContentPosition(position widget.RowLayoutPosition) *Row {
 func (r *Row) SetContentStretch(stretch bool) *Row {
 	r.cStretch = stretch
 	return r
+}
+
+func (r *Row) SetTheme(th *theme.PanelTheme) *Row {
+	r.SetPadding(th.Padding).SetSpacing(th.Spacing)
+	r.Container.SetTheme(th)
+	return r
+}
+
+func (r *Row) AddChild(children ...widget.PreferredSizeLocateableWidget) widget.RemoveChildFunc {
+	for _, c := range children {
+		c.GetWidget().LayoutData = widget.RowLayoutData{
+			Position: r.cPosition,
+			Stretch:  r.cStretch,
+		}
+	}
+
+	return r.Container.AddChild(children...)
 }

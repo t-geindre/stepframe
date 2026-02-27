@@ -21,9 +21,7 @@ type TrackBars struct {
 func NewTrackBars(state *TrackState) *TrackBars {
 	t := &TrackBars{
 		Grid: container.NewGrid().
-			SetBackgroundOffsetImage(theme.Current.BarContainerPanelTheme.BackgroundImage).
-			SetPadding(theme.Current.BarContainerPanelTheme.Padding).
-			SetSpacing(theme.Current.BarContainerPanelTheme.Spacing, theme.Current.BarContainerPanelTheme.Spacing).
+			SetTheme(theme.Current.BarContainerPanelTheme).
 			SetColumns(BarsCount).
 			SetDefaultStretch(true, true),
 		bars:  make([]*container.Row, 0),
@@ -62,10 +60,7 @@ func (t *TrackBars) HandleEvent(e seq.Event) {
 }
 
 func (t *TrackBars) AddBar() {
-	bar := container.NewRow().
-		SetBackgroundOffsetImage(theme.Current.BarPanelTheme.BackgroundImage).
-		SetPulseBackgroundOffsetImage(theme.Current.BarPanelTheme.BackgroundImage).
-		SetPulseDuration(theme.Current.LedTheme.PulseDuration)
+	bar := container.NewRow().SetTheme(theme.Current.BarPanelTheme)
 
 	t.bars = append(t.bars, bar)
 	t.Grid.AddChild(bar)

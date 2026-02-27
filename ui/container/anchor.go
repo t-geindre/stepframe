@@ -1,6 +1,10 @@
 package container
 
-import "github.com/ebitenui/ebitenui/widget"
+import (
+	"stepframe/ui/theme"
+
+	"github.com/ebitenui/ebitenui/widget"
+)
 
 type Anchor struct {
 	*Container[*Anchor]
@@ -38,6 +42,12 @@ func (a *Anchor) SetContentHorizontalPosition(horizontalPosition widget.AnchorLa
 func (a *Anchor) SetContentPosition(horizontalPosition, verticalPosition widget.AnchorLayoutPosition) *Anchor {
 	a.layoutData.HorizontalPosition = horizontalPosition
 	a.layoutData.VerticalPosition = verticalPosition
+	return a
+}
+
+func (a *Anchor) SetTheme(th *theme.PanelTheme) *Anchor {
+	a.SetPadding(th.Padding)
+	a.Container.SetTheme(th)
 	return a
 }
 
