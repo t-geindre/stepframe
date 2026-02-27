@@ -23,15 +23,19 @@ func NewOffsetBackground[T widget.Containerer](container *widget.Container, oute
 func (b *OffsetBackground[T]) SetBackgroundOffsetImage(img *theme.OffsetImage) T {
 	b.background = img
 
+	if img.Offset == nil {
+		return b.outer
+	}
+
 	imw, imh := img.Image.MinSize()
 	wmw, wmh := b.GetWidget().MinHeight, b.GetWidget().MinHeight
 
 	if wmw == 0 {
-		b.GetWidget().MinWidth = imw - b.background.Offset.X*2
+		b.GetWidget().MinWidth = imw - b.background.Offset.Dx()
 	}
 
 	if wmh == 0 {
-		b.GetWidget().MinHeight = imh - b.background.Offset.Y*2
+		b.GetWidget().MinHeight = imh - b.background.Offset.Dy()
 	}
 
 	return b.outer
@@ -43,8 +47,9 @@ func (b *OffsetBackground[T]) Render(screen *ebiten.Image) {
 	}
 
 	rect := b.GetWidget().Rect
-	rect.Min = rect.Min.Sub(b.background.Offset)
-	rect.Max = rect.Max.Add(b.background.Offset)
+	if b.background.Offset != nil {
+		rect = b.background.Offset.Apply(rect)
+	}
 
 	b.background.Image.Draw(screen, rect.Dx(), rect.Dy(), func(opts *ebiten.DrawImageOptions) {
 		opts.GeoM.Translate(float64(rect.Min.X), float64(rect.Min.Y))

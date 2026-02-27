@@ -1,11 +1,9 @@
 package theme
 
 import (
-	img "image"
 	"image/color"
 	"time"
 
-	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -15,15 +13,15 @@ var Current *Theme
 
 type Theme struct {
 	*widget.Theme
-	PanelTheme         *PanelTheme
-	VirtualPanelTheme  *PanelTheme
-	DropPanelTheme     *PanelTheme
-	ShinyPanelTheme    *PanelTheme
-	IconsTheme         *IconsTheme
-	LedTheme           *LedTheme
-	MainContainerTheme *MainContainerTheme
-	TrackTheme         *TrackTheme
-	Colors             ColorTheme
+	PanelTheme             *PanelTheme
+	AddTrackPanelTheme     *PanelTheme
+	BarContainerPanelTheme *PanelTheme
+	BarPanelTheme          *PanelTheme
+	IconsTheme             *IconsTheme
+	LedTheme               *LedTheme
+	MainContainerTheme     *MainContainerTheme
+	TrackTheme             *TrackTheme
+	Colors                 ColorTheme
 }
 
 type MainContainerTheme struct {
@@ -31,12 +29,6 @@ type MainContainerTheme struct {
 	GradientBottom color.Color
 	Padding        *widget.Insets
 	Spacing        int
-}
-
-type PanelTheme struct {
-	BackgroundImage *OffsetImage
-	Padding         *widget.Insets
-	Spacing         int
 }
 
 type LedTheme struct {
@@ -52,11 +44,6 @@ type TrackTheme struct {
 
 type TrackIdTheme struct {
 	Font *text.Face
-}
-
-type OffsetImage struct {
-	Image  *image.NineSlice
-	Offset img.Point
 }
 
 // ICONS

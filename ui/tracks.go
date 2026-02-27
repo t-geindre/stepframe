@@ -26,8 +26,8 @@ func NewTracks(logger zerolog.Logger, sequencer *seq.Sequencer) *Tracks {
 		SetContentStretch(true)
 
 	addTrackRow := container.NewRow().
-		SetBackgroundOffsetImage(theme.Current.VirtualPanelTheme.BackgroundImage).
-		SetPadding(theme.Current.VirtualPanelTheme.Padding)
+		SetBackgroundOffsetImage(theme.Current.AddTrackPanelTheme.BackgroundImage).
+		SetPadding(theme.Current.AddTrackPanelTheme.Padding)
 
 	addTrackBtn := widgets.NewButton(func() { sequencer.TryCommand(seq.Command{Id: seq.CmdNewTrack}) })
 	addTrackBtn.AddChild(widgets.NewIcon(theme.IconPlus, theme.IconSizeMedium))

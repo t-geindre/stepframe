@@ -22,9 +22,9 @@ type TrackBars struct {
 func NewTrackBars() *TrackBars {
 	t := &TrackBars{
 		Grid: container.NewGrid().
-			SetBackgroundOffsetImage(theme.Current.DropPanelTheme.BackgroundImage).
-			SetPadding(theme.Current.DropPanelTheme.Padding).
-			SetSpacing(theme.Current.DropPanelTheme.Spacing, theme.Current.DropPanelTheme.Spacing).
+			SetBackgroundOffsetImage(theme.Current.BarContainerPanelTheme.BackgroundImage).
+			SetPadding(theme.Current.BarContainerPanelTheme.Padding).
+			SetSpacing(theme.Current.BarContainerPanelTheme.Spacing, theme.Current.BarContainerPanelTheme.Spacing).
 			SetColumns(BarsCount).
 			SetDefaultStretch(true, true),
 		bars:      make([]*container.Row, 0),
@@ -42,7 +42,7 @@ func (t *TrackBars) HandleEvent(e any) {
 }
 
 func (t *TrackBars) AddBar() {
-	bar := container.NewRow().SetBackgroundOffsetImage(theme.Current.ShinyPanelTheme.BackgroundImage)
+	bar := container.NewRow().SetBackgroundOffsetImage(theme.Current.BarPanelTheme.BackgroundImage)
 	t.bars = append(t.bars, bar)
 	t.Grid.AddChild(bar)
 }

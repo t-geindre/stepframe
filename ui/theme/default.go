@@ -15,6 +15,7 @@ func SetDefaultTheme() {
 	cText := color.White
 	tileSheet := NewInternalSheet()
 	face := getFontFace(18, false)
+	panel := NewPanelTheme().WithSpacing(10).WithPadding(&widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8})
 
 	theme := &Theme{
 		MainContainerTheme: &MainContainerTheme{
@@ -23,42 +24,28 @@ func SetDefaultTheme() {
 			Padding:        widget.NewInsetsSimple(30),
 			Spacing:        10,
 		},
-		PanelTheme: &PanelTheme{
-			BackgroundImage: &OffsetImage{Image: image.NewNineSlice(
+		PanelTheme: panel.WithBackgroundImage(
+			NewSimpleOffsetImage(image.NewNineSlice(
 				tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButton),
-				[3]int{10, 27, 10},
-				[3]int{10, 27, 10},
-			)},
-			Padding: &widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8},
-			Spacing: 10,
-		},
-		VirtualPanelTheme: &PanelTheme{
-			BackgroundImage: &OffsetImage{Image: image.NewNineSlice(
-				tileSheet.GetTile(TileVirtualPanel),
-				[3]int{10, 44, 10},
-				[3]int{10, 44, 10},
-			)},
-			Padding: &widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8},
-			Spacing: 10,
-		},
-		DropPanelTheme: &PanelTheme{
-			BackgroundImage: &OffsetImage{Image: image.NewNineSlice(
-				tileSheet.GetTile(TileDropPanel),
-				[3]int{10, 44, 10},
-				[3]int{10, 44, 10},
-			)},
-			Padding: &widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8},
-			Spacing: 10,
-		},
-		ShinyPanelTheme: &PanelTheme{
-			BackgroundImage: &OffsetImage{Image: image.NewNineSlice(
-				tileSheet.GetTile(TileShinyPanel),
-				[3]int{21, 22, 21},
-				[3]int{21, 22, 21},
-			), Offset: img.Pt(16, 16)},
-			Padding: &widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8},
-			Spacing: 10,
-		},
+				[3]int{10, 27, 10}, [3]int{10, 27, 10},
+			)),
+		),
+		AddTrackPanelTheme: panel.WithBackgroundImage(
+			NewSimpleOffsetImage(image.NewNineSlice(
+				tileSheet.GetTile(TileVirtualPanel), [3]int{10, 44, 10}, [3]int{10, 44, 10},
+			)),
+		),
+		BarContainerPanelTheme: panel.WithBackgroundImage(
+			NewSimpleOffsetImage(image.NewNineSlice(
+				tileSheet.GetTile(TileDropPanel), [3]int{10, 44, 10}, [3]int{10, 44, 10},
+			)),
+		),
+		BarPanelTheme: panel.WithBackgroundImage(&OffsetImage{
+			Image: image.NewNineSlice(
+				tileSheet.GetTile(TileShinyPanel), [3]int{21, 22, 21}, [3]int{21, 22, 21},
+			),
+			Offset: NewOutsetsSimple(16),
+		}),
 		Theme: &widget.Theme{
 			DefaultFace:      face,
 			DefaultTextColor: cText,
