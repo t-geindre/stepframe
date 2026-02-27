@@ -4,6 +4,7 @@ import (
 	"stepframe/ui/container"
 	"stepframe/ui/theme"
 
+	"github.com/ebitenui/ebitenui/input"
 	"github.com/ebitenui/ebitenui/widget"
 )
 
@@ -42,6 +43,7 @@ func (b *Button) Validate() {
 	b.Row.GetWidget().CursorExitEvent.AddHandler(b.onCursorExit)
 	b.Row.GetWidget().MouseButtonPressedEvent.AddHandler(b.onPress)
 	b.Row.GetWidget().MouseButtonReleasedEvent.AddHandler(b.onRelease)
+	b.Row.GetWidget().OnUpdate = b.onUpdate
 
 	// Default state
 	b.onCursorExit(nil)
@@ -74,5 +76,11 @@ func (b *Button) onRelease(any) {
 		}
 	} else {
 		b.Row.SetBackgroundImage(theme.Current.ButtonTheme.Image.Idle)
+	}
+}
+
+func (b *Button) onUpdate(widget.HasWidget) {
+	if b.hover {
+		input.SetCursorShape(input.CURSOR_POINTER)
 	}
 }

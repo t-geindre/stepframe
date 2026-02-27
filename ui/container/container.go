@@ -30,6 +30,18 @@ func (c *Container[T]) SetBackgroundImage(img *image.NineSlice) T {
 	} else {
 		widget.ContainerOpts.BackgroundImage(img)(c.Container)
 	}
+
+	imw, imh := img.MinSize()
+	wmw, wmh := c.GetWidget().MinHeight, c.GetWidget().MinHeight
+
+	if wmw == 0 {
+		c.GetWidget().MinWidth = imw
+	}
+
+	if wmh == 0 {
+		c.GetWidget().MinHeight = imh
+	}
+
 	return c.outer
 }
 

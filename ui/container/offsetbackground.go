@@ -23,6 +23,17 @@ func NewOffsetBackground[T widget.Containerer](container *widget.Container, oute
 func (b *OffsetBackground[T]) SetBackgroundOffsetImage(img *theme.OffsetImage) T {
 	b.background = img
 
+	imw, imh := img.Image.MinSize()
+	wmw, wmh := b.GetWidget().MinHeight, b.GetWidget().MinHeight
+
+	if wmw == 0 {
+		b.GetWidget().MinWidth = imw - b.background.Offset.X*2
+	}
+
+	if wmh == 0 {
+		b.GetWidget().MinHeight = imh - b.background.Offset.Y*2
+	}
+
 	return b.outer
 }
 
