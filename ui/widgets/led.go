@@ -16,11 +16,11 @@ type Led struct {
 	lastPulse         time.Time
 }
 
-func NewLed(isOn bool, color theme.Color) *Led {
+func NewLed(color theme.Color) *Led {
 	l := &Led{
 		Widget: widget.NewWidget(),
 		color:  theme.Current.Colors[color],
-		isOn:   isOn,
+		isOn:   true,
 	}
 	return l
 }

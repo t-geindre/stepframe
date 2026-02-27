@@ -24,7 +24,7 @@ func NewTrack(id int, sequencer *seq.Sequencer) *Track {
 	idLabel.SetFont(theme.Current.TrackTheme.Id.Font)
 
 	commands := NewTrackCommands(state)
-	bars := NewTrackBars()
+	bars := NewTrackBars(state)
 
 	cont := container.NewGrid().
 		SetColumns(3).

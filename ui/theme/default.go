@@ -107,7 +107,6 @@ func SetDefaultTheme() {
 			IconColorDefault: colornames.White,
 			ColorIdle:        colornames.Red,
 			ColorOn:          colornames.Lime,
-			ColorOff:         colornames.Black,
 			ColorArmed:       colornames.Yellow,
 		},
 		LedTheme: &LedTheme{

@@ -25,6 +25,7 @@ const (
 	EvBeat EventId = iota
 	EvPlaying
 	EvStopped
+	EvReset
 	EvPaused
 	EvRecording
 	EvArmedPlaying

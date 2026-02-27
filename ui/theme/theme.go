@@ -82,7 +82,6 @@ type ColorTheme map[Color]color.Color
 
 const (
 	ColorOn Color = iota
-	ColorOff
 	ColorIdle
 	ColorArmed
 	IconColorDefault

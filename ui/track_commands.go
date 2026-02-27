@@ -22,13 +22,13 @@ func NewTrackCommands(state *TrackState) *TrackCommands {
 	// Play button
 	playBtn := widgets.NewButton(state.TogglePlay)
 	tc.playIcon = widgets.NewIcon(theme.IconPlay, theme.IconSizeMedium)
-	tc.playPulse = widgets.NewLed(true, theme.ColorNone)
+	tc.playPulse = widgets.NewLed(theme.ColorNone)
 	playBtn.AddChild(tc.playIcon, tc.playPulse)
 
 	// Record button
 	recordBtn := widgets.NewButton(state.ToggleRecord)
 	recordIcon := widgets.NewIcon(theme.IconRecord, theme.IconSizeMedium)
-	tc.recordPulse = widgets.NewLed(true, theme.ColorNone)
+	tc.recordPulse = widgets.NewLed(theme.ColorNone)
 	recordBtn.AddChild(recordIcon, tc.recordPulse)
 
 	// Delete button

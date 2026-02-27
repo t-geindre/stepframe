@@ -185,3 +185,8 @@ func (t *Track) setDueState(nowLocal int64) {
 func (t *Track) flush() []midi.Message {
 	return t.noteTracker.Flush()
 }
+
+func (t *Track) Reset() {
+	t.Track.Reset()
+	t.dispatch(Event{Id: EvReset, TrackId: &t.id})
+}

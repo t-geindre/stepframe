@@ -30,7 +30,7 @@ func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 	// BPM LED todo BPB
 	t.beatLeds = make([]*widgets.Led, 4)
 	for i := 0; i < 4; i++ {
-		t.beatLeds[i] = widgets.NewLed(true, theme.ColorIdle)
+		t.beatLeds[i] = widgets.NewLed(theme.ColorIdle)
 		t.beatLeds[i].SetPulseColor(theme.ColorOn)
 	}
 
