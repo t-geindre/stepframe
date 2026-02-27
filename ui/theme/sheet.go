@@ -31,9 +31,11 @@ const (
 	TileButtonHover
 	TileButton
 	TileButtonPressed
-	TileDashed
+	TileVirtualPanel
+	TileDropPanel
 	TileLedOn
 	TileLedOff
+	TileShinyPanel
 )
 
 type TileMap map[Tile]struct{ x, y float64 }
@@ -52,9 +54,11 @@ var tileMap = TileMap{
 	TileButtonHover:   {2, 1},
 	TileButton:        {3, 1},
 	TileButtonPressed: {4, 1},
-	TileDashed:        {5, 1},
-	TileLedOn:         {6, 1},
-	TileLedOff:        {7, 1},
+	TileVirtualPanel:  {5, 1},
+	TileDropPanel:     {6, 1},
+	TileLedOn:         {7, 1},
+	TileLedOff:        {0, 2},
+	TileShinyPanel:    {1, 2},
 }
 
 type Sheet struct {

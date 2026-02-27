@@ -3,6 +3,7 @@ package container
 import (
 	_ "embed"
 	"image/color"
+	"stepframe/ui/theme"
 
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
@@ -20,6 +21,8 @@ type Container[T widget.Containerer] struct {
 	gradientOn               bool
 	gradientFrom, gradientTo [4]float32
 	gradientCache            *ebiten.Image
+
+	offsetBackground *theme.OffsetImage
 }
 
 func NewContainer[T widget.Containerer](layout widget.Layouter, outer T) *Container[T] {
@@ -27,7 +30,19 @@ func NewContainer[T widget.Containerer](layout widget.Layouter, outer T) *Contai
 		Container: widget.NewContainer(
 			widget.ContainerOpts.Layout(layout),
 		),
-		outer: outer}
+		outer: outer,
+	}
+}
+
+func (c *Container[T]) SetBackgroundOffsetImage(img *theme.OffsetImage) T {
+	if img.Offset.X != 0 || img.Offset.Y != 0 {
+		c.offsetBackground = img
+		return c.outer
+	}
+
+	c.SetBackgroundImage(img.Image)
+
+	return c.outer
 }
 
 func (c *Container[T]) SetBackgroundImage(img *image.NineSlice) T {
@@ -57,20 +72,30 @@ func (c *Container[T]) SetVerticalGradientBackground(top, bottom color.Color) T 
 }
 
 func (c *Container[T]) Render(screen *ebiten.Image) {
-	if c.gradientOn {
-		c.createGradientCache()
-		rect := c.GetWidget().Rect
-		dst := screen.SubImage(rect).(*ebiten.Image)
-
-		opts := &ebiten.DrawImageOptions{}
-		opts.GeoM.Translate(float64(rect.Min.X), float64(rect.Min.Y))
-
-		dst.DrawImage(c.gradientCache, opts)
-	}
+	c.computeGradient()
 	c.Container.Render(screen)
+	c.renderOffsetBackground(screen)
 }
 
-func (c *Container[T]) createGradientCache() {
+func (c *Container[T]) renderOffsetBackground(screen *ebiten.Image) {
+	if c.offsetBackground == nil {
+		return
+	}
+
+	rect := c.GetWidget().Rect
+	rect.Min = rect.Min.Sub(c.offsetBackground.Offset)
+	rect.Max = rect.Max.Add(c.offsetBackground.Offset)
+
+	c.offsetBackground.Image.Draw(screen, rect.Dx(), rect.Dy(), func(opts *ebiten.DrawImageOptions) {
+		opts.GeoM.Translate(float64(rect.Min.X), float64(rect.Min.Y))
+	})
+}
+
+func (c *Container[T]) computeGradient() {
+	if !c.gradientOn {
+		return
+	}
+
 	if gradientShader == nil {
 		var err error
 		gradientShader, err = ebiten.NewShader(gradientShaderRaw)
@@ -93,4 +118,5 @@ func (c *Container[T]) createGradientCache() {
 	}
 
 	c.gradientCache.DrawRectShader(rect.Dx(), rect.Dy(), gradientShader, opts)
+	c.SetBackgroundImage(image.NewNineSlice(c.gradientCache, [3]int{0, rect.Dx(), 0}, [3]int{0, rect.Dy(), 0}))
 }

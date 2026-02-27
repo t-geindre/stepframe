@@ -29,7 +29,7 @@ func NewWindow(preferredW, preferredH int) *Window {
 					SetDirection(widget.DirectionVertical).
 					SetPadding(theme.Current.PanelTheme.Padding).
 					SetSpacing(theme.Current.PanelTheme.Spacing).
-					SetBackgroundImage(theme.Current.PanelTheme.BackgroundImage),
+					SetBackgroundOffsetImage(theme.Current.PanelTheme.BackgroundImage),
 			),
 			widget.WindowOpts.Modal(),
 			widget.WindowOpts.CloseMode(widget.CLICK_OUT),
@@ -46,7 +46,7 @@ func (w *Window) WithTitleBar(icon theme.Icon, title string) *Window {
 	header := container.NewRow().
 		SetPadding(theme.Current.PanelTheme.Padding).
 		SetSpacing(theme.Current.PanelTheme.Spacing).
-		SetBackgroundImage(theme.Current.PanelTheme.BackgroundImage)
+		SetBackgroundOffsetImage(theme.Current.PanelTheme.BackgroundImage)
 
 	if icon != theme.IconNone {
 		header.AddChild(NewIcon(icon, theme.IconSizeMedium))

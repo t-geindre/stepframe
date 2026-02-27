@@ -24,21 +24,39 @@ func SetDefaultTheme() {
 			Spacing:        10,
 		},
 		PanelTheme: &PanelTheme{
-			BackgroundImage: image.NewNineSlice(
+			BackgroundImage: &OffsetImage{Image: image.NewNineSlice(
 				tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButton),
-				[3]int{23, 1, 23},
-				[3]int{23, 1, 23},
-			),
+				[3]int{10, 27, 10},
+				[3]int{10, 27, 10},
+			)},
 			Padding: &widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8},
 			Spacing: 10,
 		},
-		VirtualPanelTheme: &VirtualPanelTheme{
-			BackgroundImage: image.NewNineSlice(
-				tileSheet.GetTile(TileDashed),
+		VirtualPanelTheme: &PanelTheme{
+			BackgroundImage: &OffsetImage{Image: image.NewNineSlice(
+				tileSheet.GetTile(TileVirtualPanel),
 				[3]int{10, 44, 10},
 				[3]int{10, 44, 10},
-			),
-			Padding: &widget.Insets{Left: 10, Right: 10, Top: 10, Bottom: 10},
+			)},
+			Padding: &widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8},
+			Spacing: 10,
+		},
+		DropPanelTheme: &PanelTheme{
+			BackgroundImage: &OffsetImage{Image: image.NewNineSlice(
+				tileSheet.GetTile(TileDropPanel),
+				[3]int{10, 44, 10},
+				[3]int{10, 44, 10},
+			)},
+			Padding: &widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8},
+			Spacing: 10,
+		},
+		ShinyPanelTheme: &PanelTheme{
+			BackgroundImage: &OffsetImage{Image: image.NewNineSlice(
+				tileSheet.GetTile(TileShinyPanel),
+				[3]int{21, 22, 21},
+				[3]int{21, 22, 21},
+			), Offset: img.Pt(16, 16)},
+			Padding: &widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8},
 			Spacing: 10,
 		},
 		Theme: &widget.Theme{
@@ -50,21 +68,21 @@ func SetDefaultTheme() {
 				Image: &widget.ButtonImage{
 					Idle: image.NewNineSlice(
 						tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButton),
-						[3]int{23, 1, 23},
-						[3]int{23, 1, 23},
+						[3]int{10, 27, 10},
+						[3]int{10, 27, 10},
 					),
 					Hover: image.NewNineSlice(
 						tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButtonHover),
-						[3]int{23, 1, 23},
-						[3]int{23, 1, 23},
+						[3]int{10, 27, 10},
+						[3]int{10, 27, 10},
 					),
 					Pressed: image.NewNineSlice(
 						tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButtonPressed),
-						[3]int{23, 1, 23},
-						[3]int{23, 1, 23},
+						[3]int{10, 27, 10},
+						[3]int{10, 27, 10},
 					),
 				},
-				TextPadding: &widget.Insets{Left: 15, Right: 15, Top: 5, Bottom: 5},
+				TextPadding: &widget.Insets{Left: 20, Right: 20, Top: 10, Bottom: 10},
 				TextPosition: &widget.TextPositioning{
 					VTextPosition: widget.TextPositionCenter,
 					HTextPosition: widget.TextPositionCenter,

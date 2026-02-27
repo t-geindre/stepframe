@@ -1,6 +1,7 @@
 package theme
 
 import (
+	img "image"
 	"image/color"
 	"time"
 
@@ -15,7 +16,9 @@ var Current *Theme
 type Theme struct {
 	*widget.Theme
 	PanelTheme         *PanelTheme
-	VirtualPanelTheme  *VirtualPanelTheme
+	VirtualPanelTheme  *PanelTheme
+	DropPanelTheme     *PanelTheme
+	ShinyPanelTheme    *PanelTheme
 	IconsTheme         *IconsTheme
 	LedTheme           *LedTheme
 	MainContainerTheme *MainContainerTheme
@@ -31,7 +34,7 @@ type MainContainerTheme struct {
 }
 
 type PanelTheme struct {
-	BackgroundImage *image.NineSlice
+	BackgroundImage *OffsetImage
 	Padding         *widget.Insets
 	Spacing         int
 }
@@ -43,18 +46,17 @@ type LedTheme struct {
 	PulseDuration time.Duration
 }
 
-type VirtualPanelTheme struct {
-	BackgroundImage *image.NineSlice
-	Padding         *widget.Insets
-	Spacing         int
-}
-
 type TrackTheme struct {
 	Id *TrackIdTheme
 }
 
 type TrackIdTheme struct {
 	Font *text.Face
+}
+
+type OffsetImage struct {
+	Image  *image.NineSlice
+	Offset img.Point
 }
 
 // ICONS

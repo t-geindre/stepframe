@@ -48,12 +48,13 @@ func NewTrackCommands(state *TrackState) *TrackCommands {
 	tc.Containerer = container.NewGrid().
 		// Todo apply separator instead of more spacing
 		SetSpacing(theme.Current.PanelTheme.Spacing*2, theme.Current.PanelTheme.Spacing).
+		SetStretch([]bool{false, false, true}, []bool{true}).
 		SetColumns(columns)
 
 	// Columns
 	cols := make([]widget.Containerer, columns)
 	for i := 0; i < columns; i++ {
-		cols[i] = container.NewRow().SetSpacing(theme.Current.PanelTheme.Spacing)
+		cols[i] = container.NewRow().SetContentPosition(widget.RowLayoutPositionCenter).SetSpacing(theme.Current.PanelTheme.Spacing)
 		tc.Containerer.AddChild(cols[i])
 	}
 

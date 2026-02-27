@@ -23,7 +23,7 @@ type TopBar struct {
 func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 	t := &TopBar{
 		Anchor: container.NewAnchor().
-			SetBackgroundImage(theme.Current.PanelTheme.BackgroundImage).
+			SetBackgroundOffsetImage(theme.Current.PanelTheme.BackgroundImage).
 			SetPadding(theme.Current.PanelTheme.Padding),
 	}
 

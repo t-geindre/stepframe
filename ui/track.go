@@ -31,7 +31,7 @@ func NewTrack(id int, sequencer *seq.Sequencer) *Track {
 		SetStretch([]bool{false, false, true}, []bool{true}).
 		SetSpacing(theme.Current.PanelTheme.Spacing, theme.Current.PanelTheme.Spacing).
 		SetPadding(theme.Current.PanelTheme.Padding).
-		SetBackgroundImage(theme.Current.PanelTheme.BackgroundImage)
+		SetBackgroundOffsetImage(theme.Current.PanelTheme.BackgroundImage)
 
 	cont.AddChild(idLabel, commands, bars)
 
