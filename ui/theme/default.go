@@ -41,18 +41,25 @@ func SetDefaultTheme() {
 			WithBackgroundImage(
 				NewSimpleOffsetImage(tileSheet.GetTile(TileBarContainerPanel), 10, 44, 10, 10, 44, 10),
 			),
-		BarPanelOffTheme: basePanel.
+		BarOffPanelTheme: basePanel.
 			WithBackgroundImage(NewOffsetImage(
 				tileSheet.GetTile(TileBarOffPanel), 21, 22, 21, 21, 22, 21, 16,
-			)),
-		BarPanelTheme: basePanel.
+			)).WithBackgroundColorize(ColorBarOff),
+		BarOnPanelTheme: basePanel.
 			WithBackgroundImage(NewOffsetImage(
 				tileSheet.GetTile(TileBarPanel), 21, 22, 21, 21, 22, 21, 16,
 			)).
+			WithBackgroundColorize(ColorBarOn),
+		BarActivePanelTheme: basePanel.
+			WithBackgroundImage(NewOffsetImage(
+				tileSheet.GetTile(TileBarPanel), 21, 22, 21, 21, 22, 21, 16,
+			)).
+			WithBackgroundColorize(ColorBarActive).
 			WithPulseBackgroundImage(NewOffsetImage(
 				tileSheet.GetTile(TileBarPanel), 21, 22, 21, 21, 22, 21, 16,
 			)).
-			WithPulseDuration(time.Millisecond * 300),
+			WithPulseDuration(time.Millisecond * 300).
+			WithPulseBackgroundColorize(ColorBarPulse),
 		LedPanelTheme: basePanel.
 			WithBackgroundImage(NewOffsetImage(
 				tileSheet.GetTile(TileLedOn), 0, 64, 0, 0, 64, 0, 23,
@@ -60,6 +67,7 @@ func SetDefaultTheme() {
 			WithPulseBackgroundImage(NewOffsetImage(
 				tileSheet.GetTile(TileLedOn), 0, 64, 0, 0, 64, 0, 23,
 			)).
+			WithPulseBackgroundColorize(ColorLedPulse).
 			WithPulseDuration(time.Millisecond * 300),
 		Theme: &widget.Theme{ // todo use a panel instead
 			DefaultFace:      fontFace,
@@ -119,10 +127,15 @@ func SetDefaultTheme() {
 			},
 		},
 		Colors: ColorTheme{
-			IconColorDefault: colornames.White,
-			ColorIdle:        colornames.Red,
-			ColorOn:          colornames.Lime,
-			ColorArmed:       colornames.Yellow,
+			ColorIconDefault: colornames.White,
+			ColorLedIdle:     colornames.Red,
+			ColorLedOn:       colornames.Lime,
+			ColorLedArmed:    colornames.Yellow,
+			ColorLedPulse:    colornames.White,
+			ColorBarOff:      colornames.Dimgray,
+			ColorBarOn:       color.RGBA{R: 0xff, G: 0x92, B: 0xff, A: 0xff},
+			ColorBarActive:   colornames.Lime,
+			ColorBarPulse:    colornames.White,
 		},
 		TrackTheme: &TrackTheme{
 			Id: &TrackIdTheme{

@@ -21,7 +21,7 @@ func NewIcon(icon theme.Icon, size theme.IconSize) *Icon {
 	i := &Icon{
 		Widget: widget.NewWidget(),
 		size:   theme.Current.IconsTheme.Sizes[size],
-		color:  theme.Current.Colors[theme.IconColorDefault],
+		color:  theme.Current.Colors[theme.ColorIconDefault],
 	}
 	i.SetIcon(icon)
 	return i

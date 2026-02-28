@@ -100,7 +100,7 @@ func (t *TopBar) getBox() widget.Containerer {
 func (t *TopBar) SetStopped(pause bool) {
 	if !pause {
 		for _, led := range t.beatLeds {
-			led.SetColorizedBackgroundOffsetImage(theme.ColorIdle)
+			led.SetColorizedBackgroundOffsetImage(theme.ColorLedIdle)
 		}
 		t.ledCurrent = -1
 	}
@@ -120,7 +120,7 @@ func (t *TopBar) SetPlaying() {
 
 func (t *TopBar) OnBeat() {
 	if t.ledCurrent >= 0 {
-		t.beatLeds[t.ledCurrent].SetColorizedBackgroundOffsetImage(theme.ColorIdle)
+		t.beatLeds[t.ledCurrent].SetColorizedBackgroundOffsetImage(theme.ColorLedIdle)
 	}
 
 	t.ledCurrent++
@@ -128,7 +128,7 @@ func (t *TopBar) OnBeat() {
 		t.ledCurrent = 0
 	}
 
-	t.beatLeds[t.ledCurrent].SetColorizedBackgroundOffsetImage(theme.ColorOn)
+	t.beatLeds[t.ledCurrent].SetColorizedBackgroundOffsetImage(theme.ColorLedOn)
 	t.beatLeds[t.ledCurrent].Pulse()
 
 }

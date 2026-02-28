@@ -15,8 +15,9 @@ type Theme struct {
 	PanelTheme             *PanelTheme
 	AddTrackPanelTheme     *PanelTheme
 	BarContainerPanelTheme *PanelTheme
-	BarPanelTheme          *PanelTheme
-	BarPanelOffTheme       *PanelTheme
+	BarOnPanelTheme        *PanelTheme
+	BarOffPanelTheme       *PanelTheme
+	BarActivePanelTheme    *PanelTheme
 	LedPanelTheme          *PanelTheme
 	IconsTheme             *IconsTheme
 	MainContainerTheme     *MainContainerTheme
@@ -74,9 +75,14 @@ type Color int
 type ColorTheme map[Color]color.Color
 
 const (
-	ColorOn Color = iota
-	ColorIdle
-	ColorArmed
-	IconColorDefault
-	ColorNone
+	ColorNone Color = iota
+	ColorLedOn
+	ColorLedIdle
+	ColorLedArmed
+	ColorLedPulse
+	ColorIconDefault
+	ColorBarOn
+	ColorBarOff
+	ColorBarActive
+	ColorBarPulse
 )

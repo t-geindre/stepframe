@@ -102,23 +102,23 @@ func (tc *TrackCommands) applyVisualState() {
 
 	switch {
 	case tc.state.armed == ArmStop:
-		tc.playPulse.SetColorizedBackgroundOffsetImage(theme.ColorArmed)
+		tc.playPulse.SetColorizedBackgroundOffsetImage(theme.ColorLedArmed)
 	case playing:
-		tc.playPulse.SetColorizedBackgroundOffsetImage(theme.ColorOn)
+		tc.playPulse.SetColorizedBackgroundOffsetImage(theme.ColorLedOn)
 	case tc.state.armed == ArmPlay || tc.state.armed == ArmRecord:
-		tc.playPulse.SetColorizedBackgroundOffsetImage(theme.ColorArmed)
+		tc.playPulse.SetColorizedBackgroundOffsetImage(theme.ColorLedArmed)
 	default:
-		tc.playPulse.SetColorizedBackgroundOffsetImage(theme.ColorIdle)
+		tc.playPulse.SetColorizedBackgroundOffsetImage(theme.ColorLedIdle)
 	}
 
 	switch {
 	case tc.state.armed == ArmRecord:
-		tc.recordPulse.SetColorizedBackgroundOffsetImage(theme.ColorArmed)
+		tc.recordPulse.SetColorizedBackgroundOffsetImage(theme.ColorLedArmed)
 	case tc.state.armed == ArmStop && recording:
-		tc.recordPulse.SetColorizedBackgroundOffsetImage(theme.ColorArmed)
+		tc.recordPulse.SetColorizedBackgroundOffsetImage(theme.ColorLedArmed)
 	case recording:
-		tc.recordPulse.SetColorizedBackgroundOffsetImage(theme.ColorOn)
+		tc.recordPulse.SetColorizedBackgroundOffsetImage(theme.ColorLedOn)
 	default:
-		tc.recordPulse.SetColorizedBackgroundOffsetImage(theme.ColorIdle)
+		tc.recordPulse.SetColorizedBackgroundOffsetImage(theme.ColorLedIdle)
 	}
 }
