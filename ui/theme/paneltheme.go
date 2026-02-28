@@ -7,9 +7,11 @@ import (
 )
 
 type PanelTheme struct {
-	BackgroundImage         *OffsetImage
+	GradientTop             Color
+	GradientBottom          Color
+	BackgroundImage         Image
 	BackgroundColorize      Color
-	PulseBackgroundImage    *OffsetImage
+	PulseBackgroundImage    Image
 	PulseBackgroundColorize Color
 	PulseDuration           time.Duration
 	Padding                 *widget.Insets
@@ -23,7 +25,7 @@ func NewPanelTheme() *PanelTheme {
 	}
 }
 
-func (p *PanelTheme) WithBackgroundImage(img *OffsetImage) *PanelTheme {
+func (p *PanelTheme) WithBackgroundImage(img Image) *PanelTheme {
 	c := p.clone()
 	c.BackgroundImage = img
 	return c
@@ -35,7 +37,7 @@ func (p *PanelTheme) WithBackgroundColorize(color Color) *PanelTheme {
 	return c
 }
 
-func (p *PanelTheme) WithPulseBackgroundImage(img *OffsetImage) *PanelTheme {
+func (p *PanelTheme) WithPulseBackgroundImage(img Image) *PanelTheme {
 	c := p.clone()
 	c.PulseBackgroundImage = img
 	return c
@@ -59,14 +61,27 @@ func (p *PanelTheme) WithPadding(padding *widget.Insets) *PanelTheme {
 	return c
 }
 
+func (p *PanelTheme) WithSimplePadding(padding int) *PanelTheme {
+	return p.WithPadding(widget.NewInsetsSimple(padding))
+}
+
 func (p *PanelTheme) WithSpacing(spacing int) *PanelTheme {
 	c := p.clone()
 	c.Spacing = spacing
 	return c
 }
 
+func (p *PanelTheme) WithGradient(top, bottom Color) *PanelTheme {
+	c := p.clone()
+	c.GradientTop = top
+	c.GradientBottom = bottom
+	return c
+}
+
 func (p *PanelTheme) clone() *PanelTheme {
 	return &PanelTheme{
+		GradientTop:             p.GradientTop,
+		GradientBottom:          p.GradientBottom,
 		BackgroundImage:         p.BackgroundImage,
 		BackgroundColorize:      p.BackgroundColorize,
 		PulseBackgroundImage:    p.PulseBackgroundImage,

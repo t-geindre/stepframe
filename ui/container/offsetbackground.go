@@ -28,7 +28,12 @@ func NewOffsetBackground[T widget.Containerer](container *widget.Container, oute
 	}
 }
 
-func (b *OffsetBackground[T]) SetBackgroundOffsetImage(img *theme.OffsetImage) T {
+func (b *OffsetBackground[T]) SetBackgroundOffsetImage(i theme.Image) T {
+	img := theme.Current.Images[i]
+	if img == nil {
+		return b.outer
+	}
+
 	b.background = img
 
 	if img.Offset == nil {
@@ -49,8 +54,8 @@ func (b *OffsetBackground[T]) SetBackgroundOffsetImage(img *theme.OffsetImage) T
 	return b.outer
 }
 
-func (b *OffsetBackground[T]) SetPulseBackgroundOffsetImage(img *theme.OffsetImage) T {
-	b.pulseBackground = img
+func (b *OffsetBackground[T]) SetPulseBackgroundOffsetImage(i theme.Image) T {
+	b.pulseBackground = theme.Current.Images[i]
 	return b.outer
 }
 

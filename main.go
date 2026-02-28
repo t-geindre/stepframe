@@ -56,6 +56,6 @@ func main() {
 	gui := ui.New(clk, sqr, sender, receiver, logger)
 
 	// RUN
-	game.RunGame(logger, ctx, gui)
+	game.RunGame(logger, ctx, gui, game.NewFtps())
 	stop()
 }

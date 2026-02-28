@@ -29,7 +29,7 @@ const (
 	TileRecord
 	TileStop
 	TileButtonHover
-	TileButton
+	TilePanel
 	TileButtonPressed
 	TileVirtualPanel
 	TileBarContainerPanel
@@ -53,7 +53,7 @@ var tileMap = TileMap{
 	TileRecord:            {0, 1},
 	TileStop:              {1, 1},
 	TileButtonHover:       {2, 1},
-	TileButton:            {3, 1},
+	TilePanel:             {3, 1},
 	TileButtonPressed:     {4, 1},
 	TileVirtualPanel:      {5, 1},
 	TileBarContainerPanel: {6, 1},

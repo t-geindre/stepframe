@@ -20,53 +20,30 @@ func SetDefaultTheme() {
 		WithPadding(&widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8})
 
 	theme := &Theme{
-		MainContainerTheme: &MainContainerTheme{
-			GradientTop:    color.RGBA{R: 0x22, G: 0x25, B: 0x2b, A: 255},
-			GradientBottom: color.RGBA{R: 0x0f, G: 0x11, B: 0x15, A: 255},
-			Padding:        widget.NewInsetsSimple(30),
-			Spacing:        10,
-		},
+		MainPanelTheme: basePanel.
+			WithGradient(ColorMainGradientTop, ColorMainGradientBottom).
+			WithSimplePadding(30),
 		PanelTheme: basePanel.
-			WithBackgroundImage(
-				NewSimpleOffsetImage(
-					tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButton),
-					10, 27, 10, 10, 27, 10,
-				),
-			),
+			WithBackgroundImage(ImagePanel),
 		AddTrackPanelTheme: basePanel.
-			WithBackgroundImage(
-				NewSimpleOffsetImage(tileSheet.GetTile(TileVirtualPanel), 10, 44, 10, 10, 44, 10),
-			),
+			WithBackgroundImage(ImageAddTrackPanel),
 		BarContainerPanelTheme: basePanel.
-			WithBackgroundImage(
-				NewSimpleOffsetImage(tileSheet.GetTile(TileBarContainerPanel), 10, 44, 10, 10, 44, 10),
-			),
+			WithBackgroundImage(ImageBarContainerPanel),
 		BarOffPanelTheme: basePanel.
-			WithBackgroundImage(NewOffsetImage(
-				tileSheet.GetTile(TileBarOffPanel), 21, 22, 21, 21, 22, 21, 16,
-			)).WithBackgroundColorize(ColorBarOff),
+			WithBackgroundImage(ImageBarOffPanel).
+			WithBackgroundColorize(ColorBarOff),
 		BarOnPanelTheme: basePanel.
-			WithBackgroundImage(NewOffsetImage(
-				tileSheet.GetTile(TileBarPanel), 21, 22, 21, 21, 22, 21, 16,
-			)).
+			WithBackgroundImage(ImageBarOnPanel).
 			WithBackgroundColorize(ColorBarOn),
 		BarActivePanelTheme: basePanel.
-			WithBackgroundImage(NewOffsetImage(
-				tileSheet.GetTile(TileBarPanel), 21, 22, 21, 21, 22, 21, 16,
-			)).
+			WithBackgroundImage(ImageBarActivePanel).
 			WithBackgroundColorize(ColorBarActive).
-			WithPulseBackgroundImage(NewOffsetImage(
-				tileSheet.GetTile(TileBarPanel), 21, 22, 21, 21, 22, 21, 16,
-			)).
+			WithPulseBackgroundImage(ImageBarActivePanelPulse).
 			WithPulseDuration(time.Millisecond * 300).
 			WithPulseBackgroundColorize(ColorBarPulse),
 		LedPanelTheme: basePanel.
-			WithBackgroundImage(NewOffsetImage(
-				tileSheet.GetTile(TileLedOn), 0, 64, 0, 0, 64, 0, 23,
-			)).
-			WithPulseBackgroundImage(NewOffsetImage(
-				tileSheet.GetTile(TileLedOn), 0, 64, 0, 0, 64, 0, 23,
-			)).
+			WithBackgroundImage(ImageLedPanel).
+			WithPulseBackgroundImage(ImageLedPanelPulse).
 			WithPulseBackgroundColorize(ColorLedPulse).
 			WithPulseDuration(time.Millisecond * 300),
 		Theme: &widget.Theme{ // todo use a panel instead
@@ -77,7 +54,7 @@ func SetDefaultTheme() {
 				TextFace:  fontFace,
 				Image: &widget.ButtonImage{
 					Idle: image.NewNineSlice(
-						tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButton),
+						tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TilePanel),
 						[3]int{10, 27, 10},
 						[3]int{10, 27, 10},
 					),
@@ -127,15 +104,65 @@ func SetDefaultTheme() {
 			},
 		},
 		Colors: ColorTheme{
-			ColorIconDefault: colornames.White,
-			ColorLedIdle:     colornames.Red,
-			ColorLedOn:       colornames.Lime,
-			ColorLedArmed:    colornames.Yellow,
-			ColorLedPulse:    colornames.White,
-			ColorBarOff:      colornames.Dimgray,
-			ColorBarOn:       color.RGBA{R: 0xff, G: 0x92, B: 0xff, A: 0xff},
-			ColorBarActive:   colornames.Lime,
-			ColorBarPulse:    colornames.White,
+			ColorIconDefault:        colornames.White,
+			ColorLedIdle:            colornames.Red,
+			ColorLedOn:              colornames.Lime,
+			ColorLedArmed:           colornames.Yellow,
+			ColorLedPulse:           colornames.White,
+			ColorBarOff:             colornames.Dimgray,
+			ColorBarOn:              color.RGBA{R: 0xff, G: 0x92, B: 0xff, A: 0xff},
+			ColorBarActive:          colornames.Lime,
+			ColorBarPulse:           colornames.White,
+			ColorMainGradientTop:    color.RGBA{R: 0x22, G: 0x25, B: 0x2b, A: 255},
+			ColorMainGradientBottom: color.RGBA{R: 0x0f, G: 0x11, B: 0x15, A: 255},
+		},
+		Images: map[Image]*OffsetImage{
+			ImagePanel: NewSimpleOffsetImage(
+				tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TilePanel),
+				10, 27, 10,
+				10, 27, 10,
+			),
+			ImagePanelHover: NewSimpleOffsetImage(
+				tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TilePanel),
+				10, 27, 10,
+				10, 27, 10,
+			),
+			ImagePanelPressed: NewSimpleOffsetImage(
+				tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButtonPressed),
+				10, 27, 10,
+				10, 27, 10,
+			),
+			ImageAddTrackPanel: NewSimpleOffsetImage(
+				tileSheet.GetTile(TileVirtualPanel),
+				10, 44, 10,
+				10, 44, 10,
+			),
+			ImageBarContainerPanel: NewSimpleOffsetImage(
+				tileSheet.GetTile(TileBarContainerPanel),
+				10, 44, 10,
+				10, 44, 10,
+			),
+			ImageBarOffPanel: NewOffsetImage(
+				tileSheet.GetTile(TileBarOffPanel),
+				21, 22, 21,
+				21, 22, 21,
+				16,
+			),
+			ImageBarOnPanel: NewOffsetImage(
+				tileSheet.GetTile(TileBarPanel), 21, 22, 21, 21, 22, 21, 16,
+			),
+			ImageBarActivePanel: NewOffsetImage(
+				tileSheet.GetTile(TileBarPanel), 21, 22, 21, 21, 22, 21, 16,
+			),
+			ImageBarActivePanelPulse: NewOffsetImage(
+				tileSheet.GetTile(TileBarPanel), 21, 22, 21, 21, 22, 21, 16,
+			),
+			ImageLedPanel: NewOffsetImage(
+				tileSheet.GetTile(TileLedOn), 0, 64, 0, 0, 64, 0, 23,
+			),
+			ImageLedPanelPulse: NewOffsetImage(
+				tileSheet.GetTile(TileLedOn), 0, 64, 0, 0, 64, 0, 23,
+			),
 		},
 		TrackTheme: &TrackTheme{
 			Id: &TrackIdTheme{

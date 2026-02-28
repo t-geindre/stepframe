@@ -2,7 +2,7 @@ package container
 
 import (
 	_ "embed"
-	"image/color"
+	"stepframe/ui/theme"
 
 	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
@@ -27,9 +27,14 @@ func NewGradient[T widget.Containerer](container *widget.Container, outer T) *Gr
 	}
 }
 
-func (g *Gradient[T]) SetVerticalGradientBackground(top, bottom color.Color) T {
-	r1, g1, b1, a1 := top.RGBA()
-	r2, g2, b2, a2 := bottom.RGBA()
+func (g *Gradient[T]) SetVerticalGradientBackground(top, bottom theme.Color) T {
+	t, b := theme.Current.Colors[top], theme.Current.Colors[bottom]
+	if t == nil || b == nil {
+		return g.outer
+	}
+
+	r1, g1, b1, a1 := t.RGBA()
+	r2, g2, b2, a2 := b.RGBA()
 
 	g.opts = &ebiten.DrawRectShaderOptions{}
 	g.opts.Uniforms = map[string]any{

@@ -12,6 +12,7 @@ var Current *Theme
 
 type Theme struct {
 	*widget.Theme
+	MainPanelTheme         *PanelTheme
 	PanelTheme             *PanelTheme
 	AddTrackPanelTheme     *PanelTheme
 	BarContainerPanelTheme *PanelTheme
@@ -20,16 +21,9 @@ type Theme struct {
 	BarActivePanelTheme    *PanelTheme
 	LedPanelTheme          *PanelTheme
 	IconsTheme             *IconsTheme
-	MainContainerTheme     *MainContainerTheme
+	Images                 map[Image]*OffsetImage
 	TrackTheme             *TrackTheme
 	Colors                 ColorTheme
-}
-
-type MainContainerTheme struct {
-	GradientTop    color.Color
-	GradientBottom color.Color
-	Padding        *widget.Insets
-	Spacing        int
 }
 
 type TrackTheme struct {
@@ -85,4 +79,23 @@ const (
 	ColorBarOff
 	ColorBarActive
 	ColorBarPulse
+	ColorMainGradientTop
+	ColorMainGradientBottom
+)
+
+type Image int
+
+const (
+	ImageNone Image = iota
+	ImagePanel
+	ImagePanelHover
+	ImagePanelPressed
+	ImageAddTrackPanel
+	ImageBarContainerPanel
+	ImageBarOffPanel
+	ImageBarOnPanel
+	ImageBarActivePanel
+	ImageBarActivePanelPulse
+	ImageLedPanel
+	ImageLedPanelPulse
 )

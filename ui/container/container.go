@@ -68,5 +68,6 @@ func (c *Container[T]) SetTheme(th *theme.PanelTheme) T {
 	c.OffsetBackground.SetPulseBackgroundOffsetImage(th.PulseBackgroundImage)
 	c.OffsetBackground.SetPulseColorizedBackgroundOffsetImage(th.PulseBackgroundColorize)
 	c.OffsetBackground.SetPulseDuration(th.PulseDuration)
+	c.Gradient.SetVerticalGradientBackground(th.GradientTop, th.GradientBottom)
 	return c.outer
 }
