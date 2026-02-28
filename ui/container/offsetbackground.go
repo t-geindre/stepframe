@@ -30,13 +30,9 @@ func NewOffsetBackground[T widget.Containerer](container *widget.Container, oute
 
 func (b *OffsetBackground[T]) SetBackgroundOffsetImage(i theme.Image) T {
 	img := theme.Current.Images[i]
-	if img == nil {
-		return b.outer
-	}
-
 	b.background = img
 
-	if img.Offset == nil {
+	if img == nil || img.Offset == nil {
 		return b.outer
 	}
 

@@ -12,16 +12,21 @@ type Container[T widget.Containerer] struct {
 	*widget.Container
 	*Gradient[T]
 	*OffsetBackground[T]
+	*MouseState[T]
 	outer T
 }
 
 func NewContainer[T widget.Containerer](layout widget.Layouter, outer T) *Container[T] {
 	container := widget.NewContainer(widget.ContainerOpts.Layout(layout))
+	gradient := NewGradient(container, outer)
+	background := NewOffsetBackground(container, outer)
+	mouse := NewMouseState(background, outer)
 
 	return &Container[T]{
 		Container:        container,
-		Gradient:         NewGradient(container, outer),
-		OffsetBackground: NewOffsetBackground(container, outer),
+		Gradient:         gradient,
+		OffsetBackground: background,
+		MouseState:       mouse,
 		outer:            outer,
 	}
 }
@@ -63,11 +68,18 @@ func (c *Container[T]) Render(screen *ebiten.Image) {
 }
 
 func (c *Container[T]) SetTheme(th *theme.PanelTheme) T {
-	c.OffsetBackground.SetBackgroundOffsetImage(th.BackgroundImage)
-	c.OffsetBackground.SetColorizedBackgroundOffsetImage(th.BackgroundColorize)
+	c.OffsetBackground.SetBackgroundOffsetImage(th.IdleBackgroundImage)
+	c.OffsetBackground.SetColorizedBackgroundOffsetImage(th.IdleBackgroundColorize)
 	c.OffsetBackground.SetPulseBackgroundOffsetImage(th.PulseBackgroundImage)
 	c.OffsetBackground.SetPulseColorizedBackgroundOffsetImage(th.PulseBackgroundColorize)
 	c.OffsetBackground.SetPulseDuration(th.PulseDuration)
 	c.Gradient.SetVerticalGradientBackground(th.GradientTop, th.GradientBottom)
+	c.MouseState.SetIdleBackgroundOffsetImage(th.IdleBackgroundImage)
+	c.MouseState.SetIdleBackgroundOffsetColorize(th.IdleBackgroundColorize)
+	c.MouseState.SetHoverBackgroundOffsetImage(th.HoverBackgroundImage)
+	c.MouseState.SetHoverBackgroundOffsetColorize(th.HoverBackgroundColorize)
+	c.MouseState.SetPressedBackgroundOffsetImage(th.PressedBackgroundImage)
+	c.MouseState.SetPressedBackgroundOffsetColorize(th.PressedBackgroundColorize)
+	c.MouseState.SetHoverCursor(th.Cursor)
 	return c.outer
 }

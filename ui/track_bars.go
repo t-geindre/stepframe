@@ -34,9 +34,7 @@ func NewTrackBars(state *TrackState) *TrackBars {
 		beats: -1, // todo time signature
 	}
 
-	for i := 0; i < BarsCount; i++ {
-		t.AddBar()
-	}
+	t.AddBars()
 	t.Stop()
 
 	return t
@@ -59,14 +57,42 @@ func (t *TrackBars) HandleEvent(e seq.Event) {
 	}
 }
 
-func (t *TrackBars) AddBar() {
-	bar := &Bar{
-		Row:    container.NewRow(),
-		Active: len(t.bars) < 2, // first bar is active by default
+func (t *TrackBars) AddBars() {
+	for i := 0; i < BarsCount; i++ {
+		bar := &Bar{
+			Row: container.NewRow().SetOnClick(func() {
+				t.DisableBar(i)
+			}),
+			Active: len(t.bars) == 0, // first bar is active by default
+		}
+
+		t.bars = append(t.bars, bar)
+		t.Grid.AddChild(bar)
+	}
+}
+
+func (t *TrackBars) DisableBar(index int) {
+	defer t.ApplyBarVisual()
+
+	if !t.bars[index].Active {
+		t.bars[index].Active = true
+		return
 	}
 
-	t.bars = append(t.bars, bar)
-	t.Grid.AddChild(bar)
+	// at least one bar should be active
+	oneActive := false
+	for i, b := range t.bars {
+		if b.Active && i != index {
+			oneActive = true
+			break
+		}
+	}
+
+	if !oneActive {
+		return
+	}
+
+	t.bars[index].Active = false
 }
 
 func (t *TrackBars) ApplyBarVisual() {

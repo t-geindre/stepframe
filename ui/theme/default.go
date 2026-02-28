@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ebitenui/ebitenui/image"
+	"github.com/ebitenui/ebitenui/input"
 	"github.com/ebitenui/ebitenui/widget"
 	"github.com/hajimehoshi/ebiten/v2"
 	"golang.org/x/image/colornames"
@@ -24,25 +25,31 @@ func SetDefaultTheme() {
 			WithGradient(ColorMainGradientTop, ColorMainGradientBottom).
 			WithSimplePadding(30),
 		PanelTheme: basePanel.
-			WithBackgroundImage(ImagePanel),
+			WithIdleBackgroundImage(ImagePanel),
 		AddTrackPanelTheme: basePanel.
-			WithBackgroundImage(ImageAddTrackPanel),
+			WithIdleBackgroundImage(ImageAddTrackPanel),
 		BarContainerPanelTheme: basePanel.
-			WithBackgroundImage(ImageBarContainerPanel),
+			WithIdleBackgroundImage(ImageBarContainerPanel),
 		BarOffPanelTheme: basePanel.
-			WithBackgroundImage(ImageBarOffPanel).
-			WithBackgroundColorize(ColorBarOff),
+			WithIdleBackgroundImage(ImageBarOffPanel).
+			WithIdleBackgroundColorize(ColorBarOff).
+			WithHoverBackgroundColorize(ColorBarOn).
+			WithCursor(input.CURSOR_POINTER),
 		BarOnPanelTheme: basePanel.
-			WithBackgroundImage(ImageBarOnPanel).
-			WithBackgroundColorize(ColorBarOn),
+			WithIdleBackgroundImage(ImageBarOnPanel).
+			WithIdleBackgroundColorize(ColorBarOn).
+			WithHoverBackgroundColorize(ColorBarOff).
+			WithCursor(input.CURSOR_POINTER),
 		BarActivePanelTheme: basePanel.
-			WithBackgroundImage(ImageBarActivePanel).
-			WithBackgroundColorize(ColorBarActive).
+			WithIdleBackgroundImage(ImageBarActivePanel).
+			WithIdleBackgroundColorize(ColorBarActive).
 			WithPulseBackgroundImage(ImageBarActivePanelPulse).
 			WithPulseDuration(time.Millisecond * 300).
-			WithPulseBackgroundColorize(ColorBarPulse),
+			WithPulseBackgroundColorize(ColorBarPulse).
+			WithHoverBackgroundColorize(ColorBarOff).
+			WithCursor(input.CURSOR_POINTER),
 		LedPanelTheme: basePanel.
-			WithBackgroundImage(ImageLedPanel).
+			WithIdleBackgroundImage(ImageLedPanel).
 			WithPulseBackgroundImage(ImageLedPanelPulse).
 			WithPulseBackgroundColorize(ColorLedPulse).
 			WithPulseDuration(time.Millisecond * 300),
