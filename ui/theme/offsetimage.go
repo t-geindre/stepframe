@@ -4,6 +4,7 @@ import (
 	img "image"
 
 	"github.com/ebitenui/ebitenui/image"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type OffsetImage struct {
@@ -11,9 +12,16 @@ type OffsetImage struct {
 	Offset *Outsets
 }
 
-func NewSimpleOffsetImage(img *image.NineSlice) *OffsetImage {
+func NewSimpleOffsetImage(img *ebiten.Image, v1, v2, v3, h1, h2, h3 int) *OffsetImage {
 	return &OffsetImage{
-		Image: img,
+		Image: image.NewNineSlice(img, [3]int{v1, v2, v3}, [3]int{h1, h2, h3}),
+	}
+}
+
+func NewOffsetImage(img *ebiten.Image, v1, v2, v3, h1, h2, h3 int, offset int) *OffsetImage {
+	return &OffsetImage{
+		Image:  image.NewNineSlice(img, [3]int{v1, v2, v3}, [3]int{h1, h2, h3}),
+		Offset: NewOutsetsSimple(offset),
 	}
 }
 

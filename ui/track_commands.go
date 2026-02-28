@@ -11,7 +11,7 @@ import (
 
 type TrackCommands struct {
 	widget.Containerer
-	playPulse, recordPulse *widgets.Led
+	playPulse, recordPulse *container.Row
 	playIcon               *widgets.Icon
 	state                  *TrackState
 }
@@ -22,13 +22,13 @@ func NewTrackCommands(state *TrackState) *TrackCommands {
 	// Play button
 	playBtn := widgets.NewButton(state.TogglePlay)
 	tc.playIcon = widgets.NewIcon(theme.IconPlay, theme.IconSizeMedium)
-	tc.playPulse = widgets.NewLed(theme.ColorNone)
+	tc.playPulse = container.NewRow().SetTheme(theme.Current.LedPanelTheme)
 	playBtn.AddChild(tc.playIcon, tc.playPulse)
 
 	// Record button
 	recordBtn := widgets.NewButton(state.ToggleRecord)
 	recordIcon := widgets.NewIcon(theme.IconRecord, theme.IconSizeMedium)
-	tc.recordPulse = widgets.NewLed(theme.ColorNone)
+	tc.recordPulse = container.NewRow().SetTheme(theme.Current.LedPanelTheme)
 	recordBtn.AddChild(recordIcon, tc.recordPulse)
 
 	// Delete button
@@ -70,8 +70,17 @@ func NewTrackCommands(state *TrackState) *TrackCommands {
 
 func (tc *TrackCommands) HandleEvent(e seq.Event) {
 	if e.Id == seq.EvBeat {
-		tc.playPulse.Pulse()
-		tc.recordPulse.Pulse()
+		playing := tc.state.mode == ModePlaying || tc.state.mode == ModeRecording || tc.state.armed == ArmPlay || tc.state.armed == ArmRecord
+		recording := tc.state.mode == ModeRecording || tc.state.armed == ArmRecord
+
+		if playing {
+			tc.playPulse.Pulse()
+		}
+
+		if recording {
+			tc.recordPulse.Pulse()
+		}
+
 		return
 	}
 
@@ -91,29 +100,25 @@ func (tc *TrackCommands) applyVisualState() {
 		tc.playIcon.SetIcon(theme.IconPlay)
 	}
 
-	tc.playPulse.SetPulseColor(theme.IconColorDefault)
 	switch {
 	case tc.state.armed == ArmStop:
-		tc.playPulse.SetColor(theme.ColorArmed)
+		tc.playPulse.SetColorizedBackgroundOffsetImage(theme.ColorArmed)
 	case playing:
-		tc.playPulse.SetColor(theme.ColorOn)
+		tc.playPulse.SetColorizedBackgroundOffsetImage(theme.ColorOn)
 	case tc.state.armed == ArmPlay || tc.state.armed == ArmRecord:
-		tc.playPulse.SetColor(theme.ColorArmed)
+		tc.playPulse.SetColorizedBackgroundOffsetImage(theme.ColorArmed)
 	default:
-		tc.playPulse.SetColor(theme.ColorIdle)
-		tc.playPulse.SetPulseColor(theme.ColorNone)
+		tc.playPulse.SetColorizedBackgroundOffsetImage(theme.ColorIdle)
 	}
 
-	tc.recordPulse.SetPulseColor(theme.IconColorDefault)
 	switch {
 	case tc.state.armed == ArmRecord:
-		tc.recordPulse.SetColor(theme.ColorArmed)
+		tc.recordPulse.SetColorizedBackgroundOffsetImage(theme.ColorArmed)
 	case tc.state.armed == ArmStop && recording:
-		tc.recordPulse.SetColor(theme.ColorArmed)
+		tc.recordPulse.SetColorizedBackgroundOffsetImage(theme.ColorArmed)
 	case recording:
-		tc.recordPulse.SetColor(theme.ColorOn)
+		tc.recordPulse.SetColorizedBackgroundOffsetImage(theme.ColorOn)
 	default:
-		tc.recordPulse.SetColor(theme.ColorIdle)
-		tc.recordPulse.SetPulseColor(theme.ColorNone)
+		tc.recordPulse.SetColorizedBackgroundOffsetImage(theme.ColorIdle)
 	}
 }

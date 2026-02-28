@@ -14,8 +14,10 @@ import (
 func SetDefaultTheme() {
 	cText := color.White
 	tileSheet := NewInternalSheet()
-	face := getFontFace(18, false)
-	panel := NewPanelTheme().WithSpacing(10).WithPadding(&widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8})
+	fontFace := getFontFace(18, false)
+	basePanel := NewPanelTheme().
+		WithSpacing(10).
+		WithPadding(&widget.Insets{Left: 10, Right: 10, Top: 8, Bottom: 8})
 
 	theme := &Theme{
 		MainContainerTheme: &MainContainerTheme{
@@ -24,34 +26,47 @@ func SetDefaultTheme() {
 			Padding:        widget.NewInsetsSimple(30),
 			Spacing:        10,
 		},
-		PanelTheme: panel.WithBackgroundImage(
-			NewSimpleOffsetImage(image.NewNineSlice(
-				tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButton),
-				[3]int{10, 27, 10}, [3]int{10, 27, 10},
-			)),
-		),
-		AddTrackPanelTheme: panel.WithBackgroundImage(
-			NewSimpleOffsetImage(image.NewNineSlice(
-				tileSheet.GetTile(TileVirtualPanel), [3]int{10, 44, 10}, [3]int{10, 44, 10},
-			)),
-		),
-		BarContainerPanelTheme: panel.WithBackgroundImage(
-			NewSimpleOffsetImage(image.NewNineSlice(
-				tileSheet.GetTile(TileBarContainerPanel), [3]int{10, 44, 10}, [3]int{10, 44, 10},
-			)),
-		),
-		BarPanelTheme: panel.WithBackgroundImage(&OffsetImage{
-			Image: image.NewNineSlice(
-				tileSheet.GetTile(TileBarPanel), [3]int{21, 22, 21}, [3]int{21, 22, 21},
+		PanelTheme: basePanel.
+			WithBackgroundImage(
+				NewSimpleOffsetImage(
+					tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButton),
+					10, 27, 10, 10, 27, 10,
+				),
 			),
-			Offset: NewOutsetsSimple(16),
-		}),
-		Theme: &widget.Theme{
-			DefaultFace:      face,
+		AddTrackPanelTheme: basePanel.
+			WithBackgroundImage(
+				NewSimpleOffsetImage(tileSheet.GetTile(TileVirtualPanel), 10, 44, 10, 10, 44, 10),
+			),
+		BarContainerPanelTheme: basePanel.
+			WithBackgroundImage(
+				NewSimpleOffsetImage(tileSheet.GetTile(TileBarContainerPanel), 10, 44, 10, 10, 44, 10),
+			),
+		BarPanelOffTheme: basePanel.
+			WithBackgroundImage(NewOffsetImage(
+				tileSheet.GetTile(TileBarOffPanel), 21, 22, 21, 21, 22, 21, 16,
+			)),
+		BarPanelTheme: basePanel.
+			WithBackgroundImage(NewOffsetImage(
+				tileSheet.GetTile(TileBarPanel), 21, 22, 21, 21, 22, 21, 16,
+			)).
+			WithPulseBackgroundImage(NewOffsetImage(
+				tileSheet.GetTile(TileBarPanel), 21, 22, 21, 21, 22, 21, 16,
+			)).
+			WithPulseDuration(time.Millisecond * 300),
+		LedPanelTheme: basePanel.
+			WithBackgroundImage(NewOffsetImage(
+				tileSheet.GetTile(TileLedOn), 0, 64, 0, 0, 64, 0, 23,
+			)).
+			WithPulseBackgroundImage(NewOffsetImage(
+				tileSheet.GetTile(TileLedOn), 0, 64, 0, 0, 64, 0, 23,
+			)).
+			WithPulseDuration(time.Millisecond * 300),
+		Theme: &widget.Theme{ // todo use a panel instead
+			DefaultFace:      fontFace,
 			DefaultTextColor: cText,
 			ButtonTheme: &widget.ButtonParams{
 				TextColor: &widget.ButtonTextColor{Idle: cText},
-				TextFace:  face,
+				TextFace:  fontFace,
 				Image: &widget.ButtonImage{
 					Idle: image.NewNineSlice(
 						tileSheet.Crop(img.Rect(9, 9, 56, 56)).GetTile(TileButton),
@@ -76,7 +91,7 @@ func SetDefaultTheme() {
 				},
 			},
 			TextTheme: &widget.TextParams{
-				Face:  face,
+				Face:  fontFace,
 				Color: cText,
 				Position: &widget.TextPositioning{
 					VTextPosition: widget.TextPositionCenter,
@@ -108,13 +123,6 @@ func SetDefaultTheme() {
 			ColorIdle:        colornames.Red,
 			ColorOn:          colornames.Lime,
 			ColorArmed:       colornames.Yellow,
-		},
-		LedTheme: &LedTheme{
-			OnImage:       tileSheet.GetTile(TileLedOn),
-			OffImage:      tileSheet.GetTile(TileLedOff),
-			Width:         16,
-			Height:        16,
-			PulseDuration: 350 * time.Millisecond,
 		},
 		TrackTheme: &TrackTheme{
 			Id: &TrackIdTheme{

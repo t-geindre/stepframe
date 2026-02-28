@@ -47,6 +47,12 @@ func (p *PanelTheme) WithPulseBackgroundColorize(color Color) *PanelTheme {
 	return c
 }
 
+func (p *PanelTheme) WithPulseDuration(duration time.Duration) *PanelTheme {
+	c := p.clone()
+	c.PulseDuration = duration
+	return c
+}
+
 func (p *PanelTheme) WithPadding(padding *widget.Insets) *PanelTheme {
 	c := p.clone()
 	c.Padding = padding

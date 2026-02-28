@@ -2,7 +2,6 @@ package theme
 
 import (
 	"image/color"
-	"time"
 
 	"github.com/ebitenui/ebitenui/widget"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -17,8 +16,9 @@ type Theme struct {
 	AddTrackPanelTheme     *PanelTheme
 	BarContainerPanelTheme *PanelTheme
 	BarPanelTheme          *PanelTheme
+	BarPanelOffTheme       *PanelTheme
+	LedPanelTheme          *PanelTheme
 	IconsTheme             *IconsTheme
-	LedTheme               *LedTheme
 	MainContainerTheme     *MainContainerTheme
 	TrackTheme             *TrackTheme
 	Colors                 ColorTheme
@@ -29,13 +29,6 @@ type MainContainerTheme struct {
 	GradientBottom color.Color
 	Padding        *widget.Insets
 	Spacing        int
-}
-
-type LedTheme struct {
-	OnImage       *ebiten.Image
-	OffImage      *ebiten.Image
-	Width, Height int
-	PulseDuration time.Duration
 }
 
 type TrackTheme struct {

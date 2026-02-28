@@ -26,13 +26,9 @@ func NewTrack(id int, sequencer *seq.Sequencer) *Track {
 	commands := NewTrackCommands(state)
 	bars := NewTrackBars(state)
 
-	cont := container.NewGrid().
+	cont := container.NewGrid().SetTheme(theme.Current.PanelTheme).
 		SetColumns(3).
-		SetStretch([]bool{false, false, true}, []bool{true}).
-		SetSpacing(theme.Current.PanelTheme.Spacing, theme.Current.PanelTheme.Spacing).
-		SetPadding(theme.Current.PanelTheme.Padding).
-		SetBackgroundOffsetImage(theme.Current.PanelTheme.BackgroundImage)
-
+		SetStretch([]bool{false, false, true}, []bool{true})
 	cont.AddChild(idLabel, commands, bars)
 
 	t := &Track{

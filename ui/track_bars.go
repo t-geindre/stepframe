@@ -26,6 +26,7 @@ func NewTrackBars(state *TrackState) *TrackBars {
 			SetDefaultStretch(true, true),
 		bars:  make([]*container.Row, 0),
 		state: state,
+		beats: -1, // todo time signature
 	}
 
 	for i := 0; i < BarsCount; i++ {

@@ -11,7 +11,7 @@ import (
 
 type TopBar struct {
 	*container.Anchor
-	beatLeds   []*widgets.Led
+	beatLeds   []*container.Row
 	ledCurrent int
 	firstBeat  bool
 
@@ -22,16 +22,13 @@ type TopBar struct {
 
 func NewTopBar(sequencer *seq.Sequencer) *TopBar {
 	t := &TopBar{
-		Anchor: container.NewAnchor().
-			SetBackgroundOffsetImage(theme.Current.PanelTheme.BackgroundImage).
-			SetPadding(theme.Current.PanelTheme.Padding),
+		Anchor: container.NewAnchor().SetTheme(theme.Current.PanelTheme),
 	}
 
 	// BPM LED todo BPB
-	t.beatLeds = make([]*widgets.Led, 4)
+	t.beatLeds = make([]*container.Row, 4)
 	for i := 0; i < 4; i++ {
-		t.beatLeds[i] = widgets.NewLed(theme.ColorIdle)
-		t.beatLeds[i].SetPulseColor(theme.ColorOn)
+		t.beatLeds[i] = container.NewRow().SetTheme(theme.Current.LedPanelTheme)
 	}
 
 	// Play button
@@ -103,7 +100,7 @@ func (t *TopBar) getBox() widget.Containerer {
 func (t *TopBar) SetStopped(pause bool) {
 	if !pause {
 		for _, led := range t.beatLeds {
-			led.SetColor(theme.ColorIdle)
+			led.SetColorizedBackgroundOffsetImage(theme.ColorIdle)
 		}
 		t.ledCurrent = -1
 	}
@@ -123,7 +120,7 @@ func (t *TopBar) SetPlaying() {
 
 func (t *TopBar) OnBeat() {
 	if t.ledCurrent >= 0 {
-		t.beatLeds[t.ledCurrent].SetColor(theme.ColorIdle)
+		t.beatLeds[t.ledCurrent].SetColorizedBackgroundOffsetImage(theme.ColorIdle)
 	}
 
 	t.ledCurrent++
@@ -131,7 +128,7 @@ func (t *TopBar) OnBeat() {
 		t.ledCurrent = 0
 	}
 
-	t.beatLeds[t.ledCurrent].SetColor(theme.ColorOn)
+	t.beatLeds[t.ledCurrent].SetColorizedBackgroundOffsetImage(theme.ColorOn)
 	t.beatLeds[t.ledCurrent].Pulse()
 
 }

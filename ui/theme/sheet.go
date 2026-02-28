@@ -35,6 +35,7 @@ const (
 	TileBarContainerPanel
 	TileLedOn
 	TileLedOff
+	TileBarOffPanel
 	TileBarPanel
 )
 
@@ -58,7 +59,8 @@ var tileMap = TileMap{
 	TileBarContainerPanel: {6, 1},
 	TileLedOn:             {7, 1},
 	TileLedOff:            {0, 2},
-	TileBarPanel:          {1, 2},
+	TileBarOffPanel:       {1, 2},
+	TileBarPanel:          {2, 2},
 }
 
 type Sheet struct {

@@ -162,6 +162,9 @@ func (s *Sequencer) pause() {
 }
 
 func (s *Sequencer) stop() {
+	for _, t := range s.tracks {
+		t.Reset()
+	}
 	s.time.Stop(true)
 	s.async.TryDispatch(Event{Id: EvStopped})
 	s.sender.TryCommand(midi.Command{Id: midi.CmdPanic})
@@ -200,11 +203,6 @@ func (s *Sequencer) requestPlay() {
 }
 
 func (s *Sequencer) play() {
-	if s.time.State() == TsStopped {
-		for _, t := range s.tracks {
-			t.Reset()
-		}
-	}
 	s.time.Play()
 	s.async.TryDispatch(Event{Id: EvPlaying})
 	s.logger.Info().Msg("play state: playing")
