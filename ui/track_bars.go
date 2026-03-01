@@ -41,12 +41,7 @@ func NewTrackBars(state *TrackState) *TrackBars {
 }
 
 func (t *TrackBars) HandleEvent(e seq.Event) {
-	switch e.Id {
-	case seq.EvStopped, seq.EvReset:
-		if e.TrackId != nil && *e.TrackId == t.state.id {
-			t.Stop()
-		}
-	case seq.EvBeat:
+	if e.Id == seq.EvBeat {
 		if t.state.mode == ModePlaying || t.state.mode == ModeRecording {
 			t.beats++
 			if t.beats > 0 && (t.beats)%4 == 0 { // todo time signature
@@ -55,13 +50,30 @@ func (t *TrackBars) HandleEvent(e seq.Event) {
 			t.bars[t.index].Pulse()
 		}
 	}
+
+	if e.TrackId == nil || *e.TrackId != t.state.id {
+		return
+	}
+
+	switch e.Id {
+	case seq.EvStopped, seq.EvReset:
+		t.Stop()
+	case seq.EvBarActivated:
+		t.bars[e.Val].Active = true
+		t.ApplyBarVisual()
+	case seq.EvBarDeactivated:
+		t.bars[e.Val].Active = false
+		t.ApplyBarVisual()
+	}
 }
 
 func (t *TrackBars) AddBars() {
 	for i := 0; i < BarsCount; i++ {
 		bar := &Bar{
 			Row: container.NewRow().SetOnClick(func() {
-				t.DisableBar(i)
+				t.state.sequencer.TryCommand(seq.Command{
+					Id: seq.CmdToggleBar, TrackId: &t.state.id, Val: i,
+				})
 			}),
 			Active: len(t.bars) == 0, // first bar is active by default
 		}
@@ -69,30 +81,6 @@ func (t *TrackBars) AddBars() {
 		t.bars = append(t.bars, bar)
 		t.Grid.AddChild(bar)
 	}
-}
-
-func (t *TrackBars) DisableBar(index int) {
-	defer t.ApplyBarVisual()
-
-	if !t.bars[index].Active {
-		t.bars[index].Active = true
-		return
-	}
-
-	// at least one bar should be active
-	oneActive := false
-	for i, b := range t.bars {
-		if b.Active && i != index {
-			oneActive = true
-			break
-		}
-	}
-
-	if !oneActive {
-		return
-	}
-
-	t.bars[index].Active = false
 }
 
 func (t *TrackBars) ApplyBarVisual() {

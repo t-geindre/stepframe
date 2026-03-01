@@ -62,7 +62,10 @@ func (t *Track) PollDue(nowLocal int64) []midi.Message {
 
 	// Auto stop recording
 	if t.state == TrackStateRecording && t.recordRealStart >= 0 {
-		if nowLocal-t.recordRealStart > t.Track.GetLengthTick() {
+		// Allow recording one extra quarter note after the last event
+		// humans are not precise and may need a little extra time to stop recording after the last event
+		targetEnd := t.Track.GetLengthTick() + t.clock.GetTicksPerQuarter()
+		if nowLocal-t.recordRealStart > targetEnd {
 			t.setState(TrackStatePlaying)
 		}
 	}
@@ -77,6 +80,11 @@ func (t *Track) PollDue(nowLocal int64) []midi.Message {
 
 func (t *Track) AddEvent(atLocalTick int64, msg midi.Message) {
 	t.setDueState(atLocalTick)
+
+	if t.scheduledState == TrackStateRecording {
+		t.recordRealStart = t.scheduledAt
+		t.setState(TrackStateRecording)
+	}
 
 	if t.state == TrackStateRecording {
 		if t.recordRealStart < 0 {
@@ -107,6 +115,14 @@ func (t *Track) HandleCommand(nowLocal int64, cmd Command) {
 		} else if t.scheduledState == TrackStateRecording {
 			t.scheduleState(TrackStateStopped, t.getNextBarTick(nowLocal))
 		}
+	case CmdToggleBar:
+		if t.IsBarActive(cmd.Val) {
+			t.DeactivateBar(cmd.Val)
+			t.dispatch(Event{Id: EvBarDeactivated, TrackId: &t.id, Val: cmd.Val})
+		} else {
+			t.ActivateBar(cmd.Val)
+			t.dispatch(Event{Id: EvBarActivated, TrackId: &t.id, Val: cmd.Val})
+		}
 	default:
 		t.logger.Warn().Int("cmdId", int(cmd.Id)).Msg("unknown command")
 		return
@@ -133,14 +149,12 @@ func (t *Track) setState(state TrackState) {
 
 	switch state {
 	case TrackStatePlaying:
-		t.Track.Reset()
 		t.dispatch(Event{Id: EvPlaying, TrackId: &t.id})
 	case TrackStateStopped:
-		t.Track.Reset()
+		t.Reset()
 		t.dispatch(Event{Id: EvStopped, TrackId: &t.id})
 	case TrackStateRecording:
 		t.recordRealStart = -1
-		t.Track.Reset()
 		t.dispatch(Event{Id: EvRecording, TrackId: &t.id})
 	default:
 		t.logger.Warn().Int("state", int(state)).Msg("unknown state")
@@ -178,6 +192,10 @@ func (t *Track) scheduleState(state TrackState, atLocal int64) {
 
 func (t *Track) setDueState(nowLocal int64) {
 	if t.scheduledState != TrackStateNone && nowLocal >= t.scheduledAt {
+		if t.scheduledState == TrackStatePlaying || t.scheduledState == TrackStateRecording {
+			t.Track.SetBaseLocalTick(t.scheduledAt)
+			t.Track.Reset()
+		}
 		t.setState(t.scheduledState)
 	}
 }

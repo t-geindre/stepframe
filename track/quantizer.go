@@ -11,7 +11,7 @@ const (
 )
 
 type Quantizer struct {
-	inner    Track
+	Track
 	gridTick int64
 	Mode     QuantizeMode
 }
@@ -23,15 +23,15 @@ func NewQuantizer(inner Track, gridTick int64, mode QuantizeMode) *Quantizer {
 	if gridTick <= 0 {
 		panic("gridTick must be > 0")
 	}
-	return &Quantizer{inner: inner, gridTick: gridTick, Mode: mode}
+	return &Quantizer{Track: inner, gridTick: gridTick, Mode: mode}
 }
 
 func (q *Quantizer) AddEvent(atLocalTick int64, msg midi.Message) {
-	base := q.inner.GetBaseLocalTick()
+	base := q.Track.GetBaseLocalTick()
 	rel := atLocalTick - base
 	relQ := quantizeTick(rel, q.gridTick, q.Mode)
 	localQ := base + relQ
-	q.inner.AddEvent(localQ, msg)
+	q.Track.AddEvent(localQ, msg)
 }
 
 func quantizeTick(tick, grid int64, mode QuantizeMode) int64 {
@@ -56,12 +56,3 @@ func quantizeTick(tick, grid int64, mode QuantizeMode) int64 {
 		return base + grid
 	}
 }
-
-// inner forwards
-
-func (q *Quantizer) Reset()                                { q.inner.Reset() }
-func (q *Quantizer) SetBaseLocalTick(baseLocal int64)      { q.inner.SetBaseLocalTick(baseLocal) }
-func (q *Quantizer) GetBaseLocalTick() int64               { return q.inner.GetBaseLocalTick() }
-func (q *Quantizer) LocalTick(nowLocal int64) int64        { return q.inner.LocalTick(nowLocal) }
-func (q *Quantizer) PollDue(nowLocal int64) []midi.Message { return q.inner.PollDue(nowLocal) }
-func (q *Quantizer) GetLengthTick() int64                  { return q.inner.GetLengthTick() }

@@ -10,13 +10,13 @@ const (
 	CmdStopRecord
 	CmdNewTrack
 	CmdRemoveTrack
-	CmdAddBeatPerBar
-	CmdSubBeatPerBar
+	CmdToggleBar
 )
 
 type Command struct {
 	Id      CommandId
 	TrackId *int
+	Val     int
 }
 
 type EventId int
@@ -30,14 +30,15 @@ const (
 	EvRecording
 	EvArmedPlaying
 	EvArmedStopped
-	EvArmedPaused
 	EvArmedRecording
-	EvStopRecording
 	EvTrackAdded
 	EvTrackRemoved
+	EvBarActivated
+	EvBarDeactivated
 )
 
 type Event struct {
 	Id      EventId
 	TrackId *int
+	Val     int
 }
